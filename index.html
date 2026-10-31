@@ -186,7 +186,8 @@ season.addEventListener('change', () => {
 function checkRangeWarning() {
   const mode = $('season').value;
   const maxRange = mode === 'winter' ? 61 :
-                   mode === 'summer' ? 81 : null;
+                 mode === 'summer' ? 81 :
+                 n('manualCapacity');
 
   const warning = $('rangeWarning');
 
