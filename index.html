@@ -2,10 +2,10 @@
 <html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Volvo Reisplanner</title><style>
 :root{font-family:system-ui,-apple-system,Arial,sans-serif;color:#173044;background:#edf3f6}*{box-sizing:border-box}body{margin:0}header{background:#15394e;color:white;padding:25px max(18px,calc((100vw - 950px)/2))}h1{margin:0;font-size:28px}header p{margin:6px 0 0;color:#d8e7ee}main{max-width:950px;margin:24px auto;padding:0 15px 35px}.card{background:white;border-radius:15px;padding:23px;margin:18px 0;box-shadow:0 2px 15px #163b4b15}h2{font-size:19px;margin:0 0 17px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.wide{grid-column:1/-1}label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #a8bac6;border-radius:8px;font:inherit;background:white}button,.button{border:0;border-radius:8px;padding:11px 16px;font:inherit;cursor:pointer;background:#126b87;color:white;text-decoration:none;display:inline-block}button.secondary,.button.secondary{background:#e3eef2;color:#17465c}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.muted{color:#526b78;font-size:13px}.result{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{background:#eef6f9;padding:16px;border-radius:10px}.stat b{display:block;font-size:23px;margin-top:7px}.stat span{font-size:13px}.notice{padding:12px;border-left:4px solid #3988a2;background:#eff8fb;margin-top:14px;border-radius:4px}.small{font-size:13px}.hidden{display:none!important}@media(max-width:650px){.grid,.result{grid-template-columns:1fr}.wide{grid-column:auto}header{padding:20px 15px}}
 </style></head><body><header><h1>🚙 Volvo Reisplanner</h1><p>Route, adresboek en reiskosten • Volvo XC60 T6 Recharge</p></header><main>
-<section class="card"><h2>1. Plan je rit</h2><div class="grid"><div><label for="origin">Vertrekadres</label><input id="origin" value="Waterjufferstraat 4, Beekbergen, Nederland" autocomplete="street-address"></div><div><label for="destination">Bestemming</label><input id="destination" placeholder="Typ een plaats of adres"></div><div><label for="saved">Opgeslagen bestemmingen</label><select id="saved"><option value="">— Kies een bestemming —</option></select></div><div><label for="distance">Afstand enkele reis (km)</label><input id="distance" type="number" min="0" step="0.1" placeholder="Vul afstand uit Google Maps in"></div><div><label for="journey">Rit</label><select id="journey"><option value="2">Heen en terug</option><option value="1">Enkele reis</option></select></div><div><label for="drive">Berekening</label><select id="drive"><option value="hybrid">Gemiddeld hybride verbruik</option><option value="electric">Volledig elektrisch (schatting)</option><option value="petrol">Alleen benzine (schatting)</option></select></div></div><div class="actions"><button id="maps">Open route in Google Maps ↗</button><button id="save" class="secondary">Bewaar bestemming</button><button id="remove" class="secondary">Verwijder bestemming</button></div><p class="muted">Google Maps opent in een nieuw tabblad. Neem de afstand van de voorgestelde route over in het vak hierboven. Het openen van Google Maps vereist geen API-sleutel.</p></section>
+<section class="card"><h2>1. Plan je rit</h2><div class="grid"><div><label for="origin">Vertrekadres</label><input id="origin" value="Beekbergen, Nederland" autocomplete="street-address"></div><div><label for="destination">Bestemming</label><input id="destination" placeholder="Typ een plaats of adres"></div><div><label for="saved">Opgeslagen bestemmingen</label><select id="saved"><option value="">— Kies een bestemming —</option></select></div><div><label for="distance">Afstand enkele reis (km)</label><input id="distance" type="number" min="0" step="0.1" placeholder="Vul afstand uit Google Maps in"></div><div><label for="journey">Rit</label><select id="journey"><option value="2">Heen en terug</option><option value="1">Enkele reis</option></select></div><div><label for="drive">Berekening</label><select id="drive"><option value="hybrid">Gemiddeld hybride verbruik</option><option value="electric">Volledig elektrisch (schatting)</option><option value="petrol">Alleen benzine (schatting)</option></select></div></div><div class="actions"><button id="maps">Open route in Google Maps ↗</button><button id="save" class="secondary">Bewaar bestemming</button><button id="remove" class="secondary">Verwijder bestemming</button></div><p class="muted">Google Maps opent in een nieuw tabblad. Neem de afstand van de voorgestelde route over in het vak hierboven. Het openen van Google Maps vereist geen API-sleutel.</p></section>
 <section class="card"><h2>2. Kosten en verbruik</h2><div class="grid"><div><label for="electricity">Stroomprijs (€ / kWh)</label><input id="electricity" type="number" step="0.001" min="0" value="0.26836"></div><div><label for="fuel">Benzineprijs (€ / liter)</label><input id="fuel" type="number" step="0.001" min="0" value="2.159"></div><div><label for="hybridkwh">Hybride stroom (kWh / 100 km)</label><input id="hybridkwh" type="number" step="0.1" min="0" value="14.2"></div><div><label for="hybridliters">Hybride benzine (liter / 100 km)</label><input id="hybridliters" type="number" step="0.1" min="0" value="1.6"></div><div><label for="evkwh">Elektrisch (kWh / 100 km)</label><input id="evkwh" type="number" step="0.1" min="0" value="25"></div><div><label for="petrolliters">Benzine (liter / 100 km)</label><input id="petrolliters" type="number" step="0.1" min="0" value="8"></div></div><div class="notice small">Dit zijn rekenwaarden, geen voorspelling van het daadwerkelijke verbruik. Bij een lange rit kan de accu leegraken; dan wijkt het hybride gemiddelde af.</div></section>
 <section class="card"><h2>3. Geschatte reiskosten</h2><div class="result"><div class="stat"><span>Totale afstand</span><b id="totaldistance">—</b></div><div class="stat"><span>Geschatte ritkosten</span><b id="totalcost">—</b></div><div class="stat"><span>Kosten per 100 km</span><b id="per100">—</b></div></div><p id="breakdown" class="muted">Vul eerst de afstand in.</p></section>
-<section class="card"><h2>4. Google-adressen automatisch aanvullen (optioneel)</h2><p class="small">Wil je bij het typen van een bestemming suggesties uit Google Maps krijgen? Dat kan met een Google Maps API-sleutel. De reisplanner werkt ook zonder deze functie.</p><div class="grid"><div class="wide"><label for="apikey">Google Maps API-sleutel</label><input id="apikey" type="password" placeholder="Plak hier je eigen sleutel" autocomplete="off"></div></div><div class="actions"><button id="activate">Activeer adresvoorstellen</button><button id="clearKey" class="secondary">Wis sleutel uit dit tabblad</button></div><p id="apiStatus" class="muted" role="status">Adresvoorstellen zijn nog niet ingeschakeld.</p><div class="notice small"><b>Beveiliging:</b> de sleutel wordt alleen in het geheugen van dit tabblad gebruikt en niet in het adresboek opgeslagen. Een API-sleutel in een browser is niet geheim: beperk hem in Google Cloud tot <b>Websites</b> met jouw GitHub Pages-adres én tot de benodigde Maps-API's. Publiceer de sleutel nooit in GitHub. Google Maps-gebruik kan kosten veroorzaken; een budgetwaarschuwing is geen harde bestedingslimiet.</div></section>
+<section class="card"><h2>4. Google-adressen automatisch aanvullen (optioneel)</h2><p class="small">Wil je bij vertrekadres en bestemming suggesties uit Google Maps krijgen? Dat kan met een Google Maps API-sleutel. De reisplanner werkt ook zonder deze functie.</p><div class="grid"><div class="wide"><label for="apikey">Google Maps API-sleutel</label><input id="apikey" type="password" placeholder="Plak hier je eigen sleutel" autocomplete="off"></div></div><div class="actions"><button id="activate">Activeer adresvoorstellen</button><button id="clearKey" class="secondary">Verwijder opgeslagen sleutel</button></div><p id="apiStatus" class="muted" role="status">Adresvoorstellen worden automatisch geactiveerd als er een sleutel is opgeslagen.</p><div class="notice small"><b>Beveiliging:</b> de sleutel wordt alleen lokaal in deze browser opgeslagen en niet in GitHub gepubliceerd. Iedereen met toegang tot dit browserprofiel kan de sleutel mogelijk uitlezen. Een API-sleutel in een browser is niet geheim: beperk hem in Google Cloud tot <b>Websites</b> met jouw GitHub Pages-adres én tot de benodigde Maps-API's. Publiceer de sleutel nooit in GitHub. Google Maps-gebruik kan kosten veroorzaken; een budgetwaarschuwing is geen harde bestedingslimiet.</div></section>
 <p class="muted">Opgeslagen bestemmingen en rekeninstellingen staan alleen in de opslag van deze browser. Andere apparaten delen dit adresboek niet automatisch.</p></main>
 <script>
 'use strict';const $=id=>document.getElementById(id);const fmt=(n,d=2)=>Number(n).toLocaleString('nl-NL',{minimumFractionDigits:d,maximumFractionDigits:d});const money=n=>'€ '+fmt(n);const fields=['origin','electricity','fuel','hybridkwh','hybridliters','evkwh','petrolliters','journey','drive'];const storageKey='volvo-reisplanner-v1';let data={settings:{},places:[]};try{const v=JSON.parse(localStorage.getItem(storageKey));if(v&&typeof v==='object'){data.settings=v.settings||{};data.places=Array.isArray(v.places)?v.places:[]}}catch{}for(const id of fields){if(data.settings[id]!=null)$(id).value=data.settings[id]}
@@ -17,7 +17,71 @@ $('save').addEventListener('click',()=>{const name=$('destination').value.trim()
 $('saved').addEventListener('change',()=>{const p=data.places.find(x=>x.name===$('saved').value);if(p){$('destination').value=p.name;$('distance').value=p.distance||'';calculate()}});
 $('remove').addEventListener('click',()=>{const name=$('saved').value;if(!name){alert('Kies eerst een opgeslagen bestemming.');return}if(confirm(`Bestemming "${name}" verwijderen?`)){data.places=data.places.filter(p=>p.name!==name);persist();updateSaved()}});
 for(const el of document.querySelectorAll('input,select'))if(el.id!=='apikey'&&el.id!=='saved')el.addEventListener('input',calculate);updateSaved();calculate();
-let placeElement=null;let mapsLoading=false;function loadMaps(key){return new Promise((resolve,reject)=>{if(window.google?.maps?.importLibrary){resolve();return}if(mapsLoading){reject(Error('Google Maps wordt al geladen.'));return}mapsLoading=true;const cb='volvoMapsReady_'+Date.now();window[cb]=()=>{delete window[cb];mapsLoading=false;resolve()};const s=document.createElement('script');s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&v=weekly&libraries=places&callback='+cb+'&loading=async&language=nl&region=NL';s.onerror=()=>{delete window[cb];mapsLoading=false;reject(Error('Google Maps kon niet worden geladen.'))};document.head.appendChild(s)})}
-$('activate').addEventListener('click',async()=>{const key=$('apikey').value.trim();if(!key){$('apiStatus').textContent='Vul eerst je API-sleutel in.';return}const btn=$('activate');btn.disabled=true;$('apiStatus').textContent='Google-adresvoorstellen worden geladen…';try{await loadMaps(key);const {PlaceAutocompleteElement}=await google.maps.importLibrary('places');if(!PlaceAutocompleteElement)throw Error('Autocomplete niet beschikbaar. Controleer of Places API (New) is ingeschakeld.');if(placeElement)placeElement.remove();placeElement=new PlaceAutocompleteElement();placeElement.setAttribute('placeholder','Zoek een bestemming in Google Maps');placeElement.style.width='100%';placeElement.style.display='block';placeElement.style.marginTop='9px';$('destination').insertAdjacentElement('afterend',placeElement);$('destination').classList.add('hidden');placeElement.addEventListener('gmp-select',async e=>{try{const place=e.placePrediction.toPlace();await place.fetchFields({fields:['formattedAddress','displayName']});$('destination').value=place.formattedAddress||place.displayName||'';$('distance').value='';calculate()}catch(err){$('apiStatus').textContent='Adres kon niet worden opgehaald: '+err.message}});$('apiStatus').textContent='Adresvoorstellen actief. Typ de bestemming in het nieuwe zoekvak. De afstand vul je nog handmatig in.';$('apikey').value=''}catch(e){$('apiStatus').textContent='Niet gelukt: '+e.message+' Controleer sleutel, API-instellingen en websitebeperkingen.'}finally{btn.disabled=false}});
-$('clearKey').addEventListener('click',()=>{$('apikey').value='';$('apiStatus').textContent='Sleutel uit het invoerveld gewist. Vernieuw de pagina om een eerder geladen Maps-sessie te beëindigen.'});
+// De API-sleutel blijft uitsluitend in deze browser (localStorage), nooit in de broncode.
+const mapsKeyStorage='volvo-reisplanner-maps-key-v1';
+let mapsLoadingPromise=null;
+let activeAutocomplete=[];
+function loadMaps(key){
+  if(window.google?.maps?.importLibrary)return Promise.resolve();
+  if(mapsLoadingPromise)return mapsLoadingPromise;
+  mapsLoadingPromise=new Promise((resolve,reject)=>{
+    const cb='volvoMapsReady_'+Date.now();
+    const script=document.createElement('script');
+    const timer=setTimeout(()=>{delete window[cb];reject(Error('Google Maps reageert niet.'));},20000);
+    window[cb]=()=>{clearTimeout(timer);delete window[cb];resolve();};
+    script.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&v=weekly&libraries=places&callback='+cb+'&loading=async&language=nl&region=NL';
+    script.onerror=()=>{clearTimeout(timer);delete window[cb];reject(Error('Google Maps kon niet worden geladen.'));};
+    document.head.appendChild(script);
+  }).catch(err=>{mapsLoadingPromise=null;throw err;});
+  return mapsLoadingPromise;
+}
+async function activateMaps(key,remember){
+  const btn=$('activate');btn.disabled=true;
+  $('apiStatus').textContent='Google-adresvoorstellen worden geladen…';
+  try{
+    await loadMaps(key);
+    const {PlaceAutocompleteElement}=await google.maps.importLibrary('places');
+    if(!PlaceAutocompleteElement)throw Error('Autocomplete niet beschikbaar. Controleer Places API (New).');
+    for(const widget of activeAutocomplete)widget.remove();
+    activeAutocomplete=[];
+    for(const [id,placeholder] of [['origin','Zoek een vertrekadres in Google Maps'],['destination','Zoek een bestemming in Google Maps']]){
+      const original=$(id);
+      const widget=new PlaceAutocompleteElement();
+      widget.setAttribute('placeholder',placeholder);
+      widget.style.width='100%';widget.style.display='block';widget.style.marginTop='9px';
+      original.insertAdjacentElement('afterend',widget);
+      original.placeholder='Huidig adres (handmatig aanpasbaar)';
+      // Het oorspronkelijke veld blijft zichtbaar en bewerkbaar.
+      widget.addEventListener('gmp-select',async event=>{
+        try{
+          const place=event.placePrediction.toPlace();
+          await place.fetchFields({fields:['formattedAddress','displayName']});
+          original.value=place.formattedAddress||place.displayName||'';
+          if(id==='destination')$('distance').value='';
+          calculate();
+        }catch(err){$('apiStatus').textContent='Adres kon niet worden opgehaald: '+err.message;}
+      });
+      activeAutocomplete.push(widget);
+    }
+    if(remember){try{localStorage.setItem(mapsKeyStorage,key)}catch{}}
+    $('apikey').value='';
+    $('apiStatus').textContent='Adresvoorstellen actief voor vertrekadres en bestemming. De API-sleutel wordt lokaal onthouden. Afstand nog handmatig invullen.';
+  }catch(err){
+    $('apiStatus').textContent='Niet gelukt: '+err.message+' Controleer API-sleutel, websitebeperkingen en facturering in Google Cloud.';
+  }finally{btn.disabled=false;}
+}
+$('activate').addEventListener('click',()=>{
+  const key=$('apikey').value.trim();
+  if(!key){$('apiStatus').textContent='Vul eerst je API-sleutel in.';return;}
+  activateMaps(key,true);
+});
+$('clearKey').addEventListener('click',()=>{
+  $('apikey').value='';
+  try{localStorage.removeItem(mapsKeyStorage)}catch{}
+  $('apiStatus').textContent='Opgeslagen sleutel verwijderd. Vernieuw de pagina om de Maps-sessie te beëindigen.';
+});
+try{
+  const savedKey=localStorage.getItem(mapsKeyStorage);
+  if(savedKey)activateMaps(savedKey,false);
+}catch{}
 </script></body></html>
