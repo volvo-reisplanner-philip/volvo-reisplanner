@@ -8,7 +8,7 @@
 <div class="grid"><div class="wide"><label for="ocmKey">Open Charge Map API-sleutel</label><input id="ocmKey" type="password" autocomplete="off" placeholder="Vul je eigen Open Charge Map-sleutel in"></div></div>
 <div class="actions"><button id="saveOcmKey" class="secondary">Sleutel lokaal bewaren</button><button id="clearOcmKey" class="secondary">Sleutel wissen</button><button id="refresh">Zoek laadpalen bij bestemming</button></div>
 <div id="chargeStatus" class="status" role="status">Vul je Open Charge Map-sleutel in en zoek laadpalen bij je bestemming.</div><div id="chargers"></div>
-<p class="muted">Bron: Open Charge Map (locaties en aansluitingen; dekking en actualiteit kunnen verschillen). We zoeken openbare Type 2-laadpunten binnen 300 meter <b>werkelijke loopafstand</b> als Google de looproute kan bepalen. Zonder bevestigde looproute wordt een laadpunt niet als passend getoond. De drie dichtstbijzijnde passende locaties worden getoond zolang betrouwbare Shuttel-tarieven ontbreken; dit zijn <b>niet</b> noodzakelijk de goedkoopste. Beschikbaarheid, Shuttel-acceptatie en Shuttel-tarieven zijn niet geverifieerd. Automatisch opnieuw zoeken vlak voor aankomst is nog niet actief.</p></section>
+<p class="muted">Bron: Open Charge Map (locaties en aansluitingen; dekking en actualiteit kunnen verschillen). We zoeken openbare Type 2-laadpunten binnen 500 meter <b>werkelijke loopafstand</b> als Google de looproute kan bepalen. Zonder bevestigde looproute wordt een laadpunt niet als passend getoond. De drie dichtstbijzijnde passende locaties worden getoond zolang betrouwbare Shuttel-tarieven ontbreken; dit zijn <b>niet</b> noodzakelijk de goedkoopste. Beschikbaarheid, Shuttel-acceptatie en Shuttel-tarieven zijn niet geverifieerd. Automatisch opnieuw zoeken vlak voor aankomst is nog niet actief.</p></section>
 <section class="card"><h2>5. Google Maps instellen</h2><div class="grid"><div class="wide"><label for="apiKey">Google Maps API-sleutel</label><input id="apiKey" type="password" placeholder="Plak hier op je eigen apparaat de sleutel" autocomplete="off"></div></div><div class="actions"><button id="connect">Google Maps verbinden</button><button id="clearKey" class="secondary">Sleutel wissen</button></div><p id="mapsStatus" class="muted" role="status">Google Maps nog niet verbonden.</p><p class="muted">Voor automatisch afstand berekenen gebruikt deze versie de Google Maps JavaScript API met Routes. Adressuggesties werken zodra ook Places is ingeschakeld. Google Cloud vereist doorgaans facturering; gebruik API- en websitebeperkingen. Een lokaal HTML-bestand is minder geschikt voor beveiligde websitebeperkingen: publiceer de app bij voorkeur op een eigen HTTPS-adres. De sleutel wordt uitsluitend lokaal in deze browser opgeslagen en niet in GitHub gepubliceerd. Gebruik altijd website- en API-beperkingen; een browsersleutel is niet volledig geheim.</p><p class="muted">Een live laadpaalkoppeling is een aparte volgende stap; Google Maps biedt geen complete, gegarandeerde Shuttel-tarieven en realtime bezettingsinformatie voor alle laadpalen.</p></section>
 <div class="actions"><button id="print" class="secondary">Afdrukken / PDF</button><button id="reset" class="secondary">Invoer herstellen</button></div><p class="muted">Om naar de Volvo te sturen: open de geselecteerde bestemming in Google Maps op je iPhone en gebruik de bestaande knop <b>‘Naar navigatie sturen’</b>.</p>
 </main><script>
@@ -82,20 +82,20 @@ $('clearKey').onclick=()=>{
   const btn=$('refresh');btn.disabled=true;$('chargers').replaceChildren();chargeMessage('Laadpalen zoeken en loopafstanden controleren…');
   try{
    const dest=await destinationCoords();
-   // 300 meter lopen is nooit korter dan 300 meter hemelsbreed. Extra zoekmarge voor datakwaliteit.
+   // 500 meter lopen is nooit korter dan 500 meter hemelsbreed. Extra zoekmarge voor datakwaliteit.
    const url=new URL('https://api.openchargemap.io/v3/poi/');
    for(const [k,v] of Object.entries({output:'json',latitude:dest.lat,longitude:dest.lng,distance:0.5,distanceunit:'KM',maxresults:100,compact:'false',verbose:'false',key}))url.searchParams.set(k,String(v));
    const resp=await fetch(url,{headers:{'Accept':'application/json'}});
    if(!resp.ok)throw Error('Open Charge Map antwoordt met HTTP '+resp.status+'. Controleer je API-sleutel.');
    const data=await resp.json();if(!Array.isArray(data))throw Error('Onverwacht antwoord van Open Charge Map.');
-   const candidates=data.filter(p=>isType2(p)&&isPublic(p)&&Number.isFinite(p.AddressInfo?.Latitude)&&Number.isFinite(p.AddressInfo?.Longitude)).map(p=>({...p,coords:{lat:p.AddressInfo.Latitude,lng:p.AddressInfo.Longitude}})).map(p=>({...p,straight:haversine(dest,p.coords)})).filter(p=>p.straight<=300).sort((a,b)=>a.straight-b.straight);
+   const candidates=data.filter(p=>isType2(p)&&isPublic(p)&&Number.isFinite(p.AddressInfo?.Latitude)&&Number.isFinite(p.AddressInfo?.Longitude)).map(p=>({...p,coords:{lat:p.AddressInfo.Latitude,lng:p.AddressInfo.Longitude}})).map(p=>({...p,straight:haversine(dest,p.coords)})).filter(p=>p.straight<=500).sort((a,b)=>a.straight-b.straight);
    const found=[];let checked=0,walkFailures=0;
    for(const p of candidates.slice(0,25)){
     checked++;
-    try{const walking=await walkingDistance(dest,p.coords);if(walking!==null&&walking<=300)found.push({p,walking});else if(walking===null)walkFailures++}catch(e){walkFailures++}
+    try{const walking=await walkingDistance(dest,p.coords);if(walking!==null&&walking<=500)found.push({p,walking});else if(walking===null)walkFailures++}catch(e){walkFailures++}
    }
    found.sort((a,b)=>a.walking-b.walking);
-   if(!found.length){chargeMessage('Geen openbare Type 2-laadpalen met bevestigde loopafstand van maximaal 300 m gevonden. '+(walkFailures?'Voor '+walkFailures+' locaties kon Google de looproute niet bepalen.':'')+' De gegevens zijn mogelijk onvolledig.');return}
+   if(!found.length){chargeMessage('Geen openbare Type 2-laadpalen met bevestigde loopafstand van maximaal 500 m gevonden. '+(walkFailures?'Voor '+walkFailures+' locaties kon Google de looproute niet bepalen.':'')+' De gegevens zijn mogelijk onvolledig.');return}
    const displayed=found.slice(0,3);
    for(const {p,walking} of displayed){
     const el=document.createElement('article');el.className='charger';
@@ -105,7 +105,7 @@ $('clearKey').onclick=()=>{
     const link=document.createElement('a');link.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent($('destination').value.trim())+'&destination='+encodeURIComponent(p.coords.lat+','+p.coords.lng)+'&travelmode=walking';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Looproute in Google Maps ↗';el.appendChild(link);
     $('chargers').appendChild(el);
    }
-   chargeMessage(displayed.length+' laadpaal'+(displayed.length===1?'':'locaties')+' gevonden binnen 300 m lopen. Gerangschikt op loopafstand, niet op prijs. Shuttel-tarieven en bezetting onbekend.'+(candidates.length>25?' Er zijn maximaal 25 kandidaten gecontroleerd.':''),true);
+   chargeMessage(displayed.length+' laadpaal'+(displayed.length===1?'':'locaties')+' gevonden binnen 500 m lopen. Gerangschikt op loopafstand, niet op prijs. Shuttel-tarieven en bezetting onbekend.'+(candidates.length>25?' Er zijn maximaal 25 kandidaten gecontroleerd.':''),true);
   }catch(e){chargeMessage('Laadpalen zoeken mislukt: '+(e.message||String(e))+'. Controleer Open Charge Map, Google Maps en je internetverbinding.')}finally{btn.disabled=false}
  };
  $('routeBtn').onclick=async()=>{
