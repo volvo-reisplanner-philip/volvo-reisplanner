@@ -153,10 +153,7 @@ season.addEventListener('change', () => {
   calc();
 });
 
-// Bij handmatige aanpassing automatisch handmatig selecteren
-$('range').addEventListener('input', () => {
-  season.value = 'manual';
-});// Waarschuwing bij te hoog elektrisch bereik
+// Waarschuwing bij te hoog elektrisch bereik
 function checkRangeWarning() {
   const mode = $('season').value;
   const maxRange = mode === 'winter' ? 61 :
