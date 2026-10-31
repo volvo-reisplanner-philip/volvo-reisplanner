@@ -1,61 +1,59 @@
-<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Volvo Reisplanner</title><style>
-:root{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#173248;background:#f2f6f8}*{box-sizing:border-box}body{margin:0}header{background:#102d43;color:white;padding:22px 16px}header>div,main{max-width:790px;margin:auto}h1{margin:0;font-size:1.55rem}header p{margin:6px 0 0;color:#c8d8e2}main{padding:16px 12px 40px}.card{background:white;padding:19px;border-radius:14px;margin-bottom:14px;box-shadow:0 2px 10px #1232}h2{font-size:1.07rem;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wide{grid-column:1/-1}label{font-size:.85rem;font-weight:650;display:block;margin-bottom:5px}gmp-place-autocomplete{display:block;width:100%;margin-top:8px}input,select{width:100%;min-width:0;padding:12px;border:1px solid #b6c9d3;border-radius:9px;font:inherit;background:white}button{font:inherit;background:#164761;color:white;border:0;border-radius:9px;padding:11px 14px;cursor:pointer;font-weight:650}button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;color:#183247}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.muted{color:#526a77;font-size:.85rem;line-height:1.5}.status{background:#fff3d8;color:#72500c;padding:10px 12px;border-radius:9px;margin:10px 0}.success{background:#e5f4ec;color:#175c3e}.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #e2e9ed}.row strong{text-align:right}.total{font-size:2.1rem;font-weight:800;color:#13633e}.charger{border:1px solid #d6e1e7;border-radius:10px;padding:13px;margin-top:10px}.charger h3{margin:0 0 6px;font-size:1rem}.badge{display:inline-block;padding:4px 8px;border-radius:6px;background:#e5edf2;font-size:.75rem;margin:3px 5px 3px 0}.warn{background:#fff0db}.hidden{display:none!important}a{color:#125577}small{font-size:.78rem}@media(max-width:430px){.grid{grid-template-columns:1fr}.card{padding:15px}}
-</style></head><body><header><div><h1>🚙 Volvo Reisplanner</h1><p>Afstand • elektrische kilometers • kosten • Type 2-laadpalen</p></div></header><main>
-<section class="card"><h2>1. Route</h2><div class="grid"><div class="wide"><label for="origin">Vertrekadres</label><input id="origin" value="Beekbergen, Nederland" autocomplete="street-address"></div><div class="wide"><label for="destination">Bestemming (adres)</label><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort"></div><div><label for="outkm">Heenreis (km)</label><input id="outkm" type="number" min="0" max="10000" step="0.1" placeholder="Via Google Maps"></div><div><label for="backkm">Terugreis (km)</label><input id="backkm" type="number" min="0" max="10000" step="0.1" placeholder="Via Google Maps"></div><div><label for="range">Elektrisch bereik bij vertrek (km)</label><input id="range" type="number" min="0" max="1000" step="1" value="40"></div><div><label for="rangeAfter">Extra elektrisch bereik na laden op bestemming (km)</label><input id="rangeAfter" type="number" min="0" max="1000" step="1" value="0"></div></div><div class="actions"><button id="routeBtn">Bereken afstand met Google Maps</button><button id="mapsBtn" class="secondary">Open bestemming in Google Maps ↗</button></div><div id="routeStatus" class="status">Automatische afstand vereist een Google Maps API-sleutel. Zonder sleutel kun je de kilometers handmatig invullen.</div><p class="muted">De Volvo toont zelf het elektrische bereik. Vul dat in kilometers in, ook bij een gedeeltelijk geladen accu. Extra bereik na laden is het aantal extra kilometers dat je op bestemming verwacht bij te laden, niet het totale bereik.</p></section>
-<section class="card"><h2>2. Adresboek</h2><div class="grid"><div class="wide"><label for="book">Opgeslagen bestemmingen</label><select id="book"><option value="">Kies een bestemming…</option></select></div></div><div class="actions"><button id="save" class="secondary">Bestemming bewaren</button><button id="remove" class="secondary">Verwijderen</button></div><p class="muted">Het adresboek wordt op dit apparaat in deze browser opgeslagen; het synchroniseert niet automatisch met een andere iPhone of Mac.</p></section>
-<section class="card"><h2>3. Kostenberekening</h2><div class="grid"><div><label for="homePrice">Thuisstroom €/kWh</label><input id="homePrice" type="number" min="0" step="0.001" value="0.26836"></div><div><label for="petrolPrice">Benzine €/liter</label><input id="petrolPrice" type="number" min="0" step="0.001" value="2.159"></div><div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="number" min="1" step="0.1" value="25"></div><div><label for="fuelUse">Benzine liter/100 km</label><input id="fuelUse" type="number" min="1" step="0.1" value="8"></div><div><label for="publicPrice">Openbaar tarief €/kWh</label><input id="publicPrice" type="number" min="0" step="0.001" value="0.555"></div><div><label for="startFee">Start-/extra kosten (€)</label><input id="startFee" type="number" min="0" step="0.01" value="0"></div></div><div class="row"><span>Totale afstand</span><strong id="totalKm">—</strong></div><div class="row"><span>Elektrisch uit thuisaccu</span><strong id="homeKm">—</strong></div><div class="row"><span>Elektrisch na bijladen</span><strong id="chargeKm">—</strong></div><div class="row"><span>Op benzine</span><strong id="petrolKm">—</strong></div><div class="row"><span>Thuisstroom</span><strong id="homeCost">—</strong></div><div class="row"><span>Openbaar laden</span><strong id="chargeCost">—</strong></div><div class="row"><span>Benzine</span><strong id="petrolCost">—</strong></div><div class="row"><span><b>Geschatte totale ritkosten</b></span><strong class="total" id="totalCost">—</strong></div><p class="muted">Vereenvoudigde kostenraming: eerst thuis geladen stroom, daarna benzine tot de bestemming, en pas daarna extra bijgeladen stroom voor de terugweg. De daadwerkelijke hybride aandrijving kan afwijken. Kosten van niet-verbruikte geladen energie zijn niet meegenomen.</p></section>
-<section class="card"><h2>4. AC-Type 2-laadpalen (live koppeling nog niet actief)</h2><div class="status" id="chargeStatus">Er is nog geen live laadpaalbron gekoppeld. De app kan daarom nog geen actuele prijzen, beschikbaarheid of de goedkoopste drie laadpalen tonen. Er worden geen laadpalen verzonnen.</div><div id="chargers"></div><div class="actions"><button id="refresh" disabled>Ververs laadpalen</button></div><p class="muted">Criteria: openbare AC-Type 2-aansluiting, beschikbaar, maximaal 300 meter <b>lopen</b> van het eindadres; sorteren op totaal tarief (Shuttel indien bekend). Automatisch opnieuw controleren bij circa 5 km vóór aankomst is nog niet actief: daarvoor zijn een live laadpaalprovider en een actieve locatievoorziening op de iPhone nodig. Beschikbaarheid bij aankomst kan nooit worden gegarandeerd.</p></section>
-<section class="card"><h2>5. Google Maps instellen</h2><div class="grid"><div class="wide"><label for="apiKey">Google Maps API-sleutel</label><input id="apiKey" type="password" placeholder="Plak hier op je eigen apparaat de sleutel" autocomplete="off"></div></div><div class="actions"><button id="connect">Google Maps verbinden</button><button id="clearKey" class="secondary">Sleutel wissen</button></div><p id="mapsStatus" class="muted" role="status">Google Maps nog niet verbonden.</p><p class="muted">Voor automatisch afstand berekenen gebruikt deze versie de Google Maps JavaScript API met Directions. Adressuggesties werken zodra ook Places is ingeschakeld. Google Cloud vereist doorgaans facturering; gebruik API- en websitebeperkingen. Een lokaal HTML-bestand is minder geschikt voor beveiligde websitebeperkingen: publiceer de app bij voorkeur op een eigen HTTPS-adres. De sleutel wordt uitsluitend lokaal in deze browser opgeslagen en niet in GitHub gepubliceerd. Gebruik altijd website- en API-beperkingen; een browsersleutel is niet volledig geheim.</p><p class="muted">Een live laadpaalkoppeling is een aparte volgende stap; Google Maps biedt geen complete, gegarandeerde Shuttel-tarieven en realtime bezettingsinformatie voor alle laadpalen.</p></section>
-<div class="actions"><button id="print" class="secondary">Afdrukken / PDF</button><button id="reset" class="secondary">Invoer herstellen</button></div><p class="muted">Om naar de Volvo te sturen: open de geselecteerde bestemming in Google Maps op je iPhone en gebruik de bestaande knop <b>‘Naar navigatie sturen’</b>.</p>
-</main><script>
-(()=>{'use strict';const $=id=>document.getElementById(id),fields=['origin','destination','outkm','backkm','range','rangeAfter','homePrice','petrolPrice','elecUse','fuelUse','publicPrice','startFee'];let mapsReady=false,dir=null,autocomplete=null;const money=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n),fmt=n=>new Intl.NumberFormat('nl-NL',{maximumFractionDigits:1}).format(n);const n=id=>{const x=Number($(id).value);return Number.isFinite(x)&&x>=0?x:0};function status(message,ok=false){$('routeStatus').textContent=message;$('routeStatus').className='status'+(ok?' success':'')};function calc(){let out=n('outkm'),back=n('backkm'),home=Math.min(out+back,n('range')),homeOutbound=Math.min(out,home),remainingHome=Math.max(0,home-homeOutbound),extra=Math.min(back-remainingHome,n('rangeAfter')),publicKm=Math.max(0,extra),petrolKm=Math.max(0,out-homeOutbound)+Math.max(0,back-remainingHome-publicKm),electricUnit=n('elecUse')/100,fuelUnit=n('fuelUse')/100;let hc=home*electricUnit*n('homePrice'),cc=publicKm*electricUnit*n('publicPrice')+(publicKm>0?n('startFee'):0),pc=petrolKm*fuelUnit*n('petrolPrice');for(const [id,val] of Object.entries({totalKm:fmt(out+back)+' km',homeKm:fmt(home)+' km',chargeKm:fmt(publicKm)+' km',petrolKm:fmt(petrolKm)+' km',homeCost:money(hc),chargeCost:money(cc),petrolCost:money(pc),totalCost:money(hc+cc+pc)}))$(id).textContent=val;try{localStorage.setItem('volvo-planner-input-v2',JSON.stringify(Object.fromEntries(fields.map(id=>[id,$(id).value]))))}catch(e){}}function mapsLink(dest){let u=new URL('https://www.google.com/maps/dir/');u.searchParams.set('api','1');u.searchParams.set('destination',dest);u.searchParams.set('travelmode','driving');if($('origin').value.trim())u.searchParams.set('origin',$('origin').value.trim());return u.toString()};$('mapsBtn').onclick=()=>{const d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}window.open(mapsLink(d),'_blank','noopener,noreferrer')};const mapsKeyName='volvo-planner-key-v2';let mapsLoadPromise=null;let widgets=[];
-function loadMaps(){
- if(window.google?.maps?.importLibrary)return Promise.resolve();
- if(mapsLoadPromise)return mapsLoadPromise;
- const key=$('apiKey').value.trim()||localStorage.getItem(mapsKeyName)||'';
- if(!key)return Promise.reject(Error('Vul eerst je Google Maps API-sleutel in.'));
- mapsLoadPromise=new Promise((resolve,reject)=>{
-  const cb='volvoMapsReady'+Date.now();const script=document.createElement('script');
-  const timer=setTimeout(()=>{delete window[cb];reject(Error('Google Maps reageert niet.'));},25000);
-  window[cb]=()=>{clearTimeout(timer);delete window[cb];resolve()};
-  script.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&v=weekly&libraries=places&callback='+cb+'&loading=async&language=nl&region=NL';
-  script.onerror=()=>{clearTimeout(timer);delete window[cb];reject(Error('Google Maps kon niet laden.'))};
-  document.head.appendChild(script);
- }).catch(e=>{mapsLoadPromise=null;throw e});return mapsLoadPromise;
-}
-async function initMaps(){
- status('Google Maps wordt geladen…');$('mapsStatus').textContent='Google Maps wordt geladen…';
- try{
-  await loadMaps();
-  const {PlaceAutocompleteElement}=await google.maps.importLibrary('places');
-  if(!PlaceAutocompleteElement)throw Error('Places API (New) is niet beschikbaar.');
-  dir=new google.maps.DirectionsService();mapsReady=true;
-  for(const w of widgets)w.remove();widgets=[];
-  for(const id of ['origin','destination']){
-   const original=$(id),widget=new PlaceAutocompleteElement();
-   widget.setAttribute('placeholder',id==='origin'?'Zoek vertrekadres via Google Maps':'Zoek bestemming via Google Maps');
-   original.insertAdjacentElement('afterend',widget);
-   widget.addEventListener('gmp-select',async event=>{
-    try{const place=event.placePrediction.toPlace();await place.fetchFields({fields:['formattedAddress','displayName']});
-     original.value=place.formattedAddress||place.displayName||'';calc();
-     status((id==='origin'?'Vertrekadres':'Bestemming')+' geselecteerd.',true);
-    }catch(e){status('Adres selecteren mislukt: '+e.message)}
-   });widgets.push(widget);
-  }
-  $('apiKey').value='';
-  $('mapsStatus').textContent='Google Maps verbonden. Zoek adressen in de extra Google-zoekvelden; de gekozen adressen verschijnen in de gewone velden.';
-  status('Google Maps verbonden. Adresvoorstellen actief voor vertrek en bestemming.',true);
- }catch(e){mapsReady=false;status('Google Maps niet verbonden: '+e.message);$('mapsStatus').textContent='Verbinding mislukt. Bij fout 403: controleer websitebeperkingen, API-rechten en facturering in Google Cloud.'}
-}
-$('connect').onclick=()=>{
- const key=$('apiKey').value.trim();
- if(key){try{localStorage.setItem(mapsKeyName,key)}catch(e){}}
- if(!key&&!localStorage.getItem(mapsKeyName)){status('Vul eerst je Google Maps API-sleutel in.');return}
- initMaps();
-};
-$('clearKey').onclick=()=>{
- try{localStorage.removeItem(mapsKeyName)}catch(e){}
- $('apiKey').value='';$('mapsStatus').textContent='Sleutel uit deze browser verwijderd. Vernieuw de pagina om de huidige sessie te stoppen.';
-};
-$('routeBtn').onclick=()=>{if(!mapsReady){status('Verbind Google Maps onder onderdeel 5 en probeer het daarna opnieuw.');return}let o=$('origin').value.trim(),d=$('destination').value.trim();if(!o||!d){status('Vul vertrekadres en bestemming in.');return}status('Heen- en terugafstand worden berekend…');Promise.all([new Promise((resolve,reject)=>dir.route({origin:o,destination:d,travelMode:google.maps.TravelMode.DRIVING},(r,s)=>s==='OK'?resolve(r.routes[0].legs.reduce((a,l)=>a+l.distance.value,0)/1000):reject(s))),new Promise((resolve,reject)=>dir.route({origin:d,destination:o,travelMode:google.maps.TravelMode.DRIVING},(r,s)=>s==='OK'?resolve(r.routes[0].legs.reduce((a,l)=>a+l.distance.value,0)/1000):reject(s)))]).then(([a,b])=>{$('outkm').value=a.toFixed(1);$('backkm').value=b.toFixed(1);calc();status('Afstanden via Google Maps berekend: '+fmt(a)+' km heen, '+fmt(b)+' km terug.',true)}).catch(e=>status('Routeberekening mislukt ('+String(e)+'). Controleer adres en of de Directions API beschikbaar is.'))};function getBook(){try{return JSON.parse(localStorage.getItem('volvo-adresboek-v2')||'[]')}catch(e){return []}}function bookRender(){let b=getBook(),sel=$('book');sel.replaceChildren(new Option('Kies een bestemming…',''));b.forEach((x,i)=>sel.add(new Option(x.name+' — '+x.destination,String(i))))}$('save').onclick=()=>{let d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}let name=prompt('Naam voor adresboek:',d);if(name===null)return;let b=getBook();b.push({name:name.trim()||d,destination:d});try{localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender();$('book').value=String(b.length-1)}catch(e){alert('Opslaan niet mogelijk in deze browser.')}};$('book').onchange=()=>{let i=$('book').value;if(i==='')return;let x=getBook()[Number(i)];if(x){$('destination').value=x.destination;calc()}};$('remove').onclick=()=>{let i=$('book').value;if(i==='')return;if(!confirm('Bestemming verwijderen?'))return;let b=getBook();b.splice(Number(i),1);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender()};$('print').onclick=()=>window.print();$('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');location.reload()};for(const id of fields)$(id).addEventListener('input',calc);try{let saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(let id of fields)if(saved[id]!==undefined)$(id).value=saved[id];$('apiKey').value=''}catch(e){}bookRender();calc();try{if(localStorage.getItem(mapsKeyName))initMaps()}catch(e){};})();
-</script></body></html>
+🚙 Volvo Reisplanner
+Afstand • elektrische kilometers • kosten • Type 2-laadpalen
+1. Route
+Vertrekadres
+Beekbergen, Nederland
+Bestemming (adres)
+Heenreis (km)
+Terugreis (km)
+Elektrisch bereik bij vertrek (km)
+Extra elektrisch bereik na laden op bestemming (km)
+Bereken afstand met Google Maps
+Open bestemming in Google Maps ↗
+Automatische afstand vereist een Google Maps API-sleutel. Zonder sleutel kun je de kilometers handmatig invullen.
+De Volvo toont zelf het elektrische bereik. Vul dat in kilometers in, ook bij een gedeeltelijk geladen accu. Extra bereik na laden is het aantal extra kilometers dat je op bestemming verwacht bij te laden, niet het totale bereik.
+2. Adresboek
+Opgeslagen bestemmingen
+Kies een bestemming…
+Bestemming bewaren
+Verwijderen
+Het adresboek wordt op dit apparaat in deze browser opgeslagen; het synchroniseert niet automatisch met een andere iPhone of Mac.
+3. Kostenberekening
+Thuisstroom €/kWh
+Benzine €/liter
+Elektrisch kWh/100 km
+Benzine liter/100 km
+Openbaar tarief €/kWh
+Start-/extra kosten (€)
+Totale afstand
+—
+Elektrisch uit thuisaccu
+—
+Elektrisch na bijladen
+—
+Op benzine
+—
+Thuisstroom
+—
+Openbaar laden
+—
+Benzine
+—
+Geschatte totale ritkosten
+—
+Vereenvoudigde kostenraming: eerst thuis geladen stroom, daarna benzine tot de bestemming, en pas daarna extra bijgeladen stroom voor de terugweg. De daadwerkelijke hybride aandrijving kan afwijken. Kosten van niet-verbruikte geladen energie zijn niet meegenomen.
+4. AC-Type 2-laadpalen (live koppeling nog niet actief)
+Er is nog geen live laadpaalbron gekoppeld. De app kan daarom nog geen actuele prijzen, beschikbaarheid of de goedkoopste drie laadpalen tonen. Er worden geen laadpalen verzonnen.
+
+Ververs laadpalen
+Criteria: openbare AC-Type 2-aansluiting, beschikbaar, maximaal 300 meter lopen van het eindadres; sorteren op totaal tarief (Shuttel indien bekend). Automatisch opnieuw controleren bij circa 5 km vóór aankomst is nog niet actief: daarvoor zijn een live laadpaalprovider en een actieve locatievoorziening op de iPhone nodig. Beschikbaarheid bij aankomst kan nooit worden gegarandeerd.
+5. Google Maps instellen
+Google Maps API-sleutel
+Google Maps verbinden
+Sleutel wissen
+Google Maps nog niet verbonden.
+Voor automatisch afstand berekenen gebruikt deze versie de Google Maps JavaScript API met Routes. Adressuggesties werken zodra ook Places is ingeschakeld. Google Cloud vereist doorgaans facturering; gebruik API- en websitebeperkingen. Een lokaal HTML-bestand is minder geschikt voor beveiligde websitebeperkingen: publiceer de app bij voorkeur op een eigen HTTPS-adres. De sleutel wordt uitsluitend lokaal in deze browser opgeslagen en niet in GitHub gepubliceerd. Gebruik altijd website- en API-beperkingen; een browsersleutel is niet volledig geheim.
+Een live laadpaalkoppeling is een aparte volgende stap; Google Maps biedt geen complete, gegarandeerde Shuttel-tarieven en realtime bezettingsinformatie voor alle laadpalen.
+Afdrukken / PDF
+Invoer herstellen
+Om naar de Volvo te sturen: open de geselecteerde bestemming in Google Maps op je iPhone en gebruik de bestaande knop ‘Naar navigatie sturen’.
