@@ -156,7 +156,8 @@ $('clearKey').onclick=()=>{
   status('Routeberekening mislukt: '+detail+'. Controleer of Routes API is toegestaan voor je API-sleutel en of facturering actief is.');
  }finally{button.disabled=false}
 };
-// Toon het extra invoerveld alleen bij Handmatig
+// Elektrisch bereik Volvo XC60: winter, zomer of handmatig
+const season = $('season');// Toon het extra invoerveld alleen bij Handmatig
 function updateManualCapacity() {
   const manual = season.value === 'manual';
 
