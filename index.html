@@ -225,7 +225,7 @@ function checkRangeWarning() {
 }
 
 // Controleer opnieuw bij iedere wijziging
-['season', 'range', 'rangeAfter', 'outkm'].forEach(id => {
+['season', 'manualCapacity', 'range', 'rangeAfter', 'outkm'].forEach(id => {
   $(id).addEventListener('input', checkRangeWarning);
   $(id).addEventListener('change', checkRangeWarning);
 });
