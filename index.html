@@ -136,5 +136,21 @@ $('clearKey').onclick=()=>{
   status('Routeberekening mislukt: '+detail+'. Controleer of Routes API is toegestaan voor je API-sleutel en of facturering actief is.');
  }finally{button.disabled=false}
 };
-function getBook(){try{return JSON.parse(localStorage.getItem('volvo-adresboek-v2')||'[]')}catch(e){return []}}function bookRender(){let b=getBook(),sel=$('book');sel.replaceChildren(new Option('Kies een bestemming…',''));b.forEach((x,i)=>sel.add(new Option(x.name+' — '+x.destination,String(i))))}$('save').onclick=()=>{let d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}let name=prompt('Naam voor adresboek:',d);if(name===null)return;let b=getBook();b.push({name:name.trim()||d,destination:d});try{localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender();$('book').value=String(b.length-1)}catch(e){alert('Opslaan niet mogelijk in deze browser.')}};$('book').onchange=()=>{let i=$('book').value;if(i==='')return;let x=getBook()[Number(i)];if(x){$('destination').value=x.destination;if(widgets[1])widgets[1].value=x.destination;calc()}};$('remove').onclick=()=>{let i=$('book').value;if(i==='')return;if(!confirm('Bestemming verwijderen?'))return;let b=getBook();b.splice(Number(i),1);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender()};$('print').onclick=()=>window.print();$('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');location.reload()};for(const id of fields)$(id).addEventListener('input',calc);try{let saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(let id of fields)if(saved[id]!==undefined)$(id).value=saved[id];$('apiKey').value=''}catch(e){}bookRender();calc();try{if(localStorage.getItem(mapsKeyName))initMaps()}catch(e){};})();
+// Elektrisch bereik Volvo XC60: winter, zomer of handmatig
+const season = $('season');
+
+season.addEventListener('change', () => {
+  if (season.value === 'winter') {
+    $('range').value = 61;
+  } else if (season.value === 'summer') {
+    $('range').value = 81;
+  }
+
+  calc();
+});
+
+// Bij handmatige aanpassing automatisch handmatig selecteren
+$('range').addEventListener('input', () => {
+  season.value = 'manual';
+});function getBook(){try{return JSON.parse(localStorage.getItem('volvo-adresboek-v2')||'[]')}catch(e){return []}}function bookRender(){let b=getBook(),sel=$('book');sel.replaceChildren(new Option('Kies een bestemming…',''));b.forEach((x,i)=>sel.add(new Option(x.name+' — '+x.destination,String(i))))}$('save').onclick=()=>{let d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}let name=prompt('Naam voor adresboek:',d);if(name===null)return;let b=getBook();b.push({name:name.trim()||d,destination:d});try{localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender();$('book').value=String(b.length-1)}catch(e){alert('Opslaan niet mogelijk in deze browser.')}};$('book').onchange=()=>{let i=$('book').value;if(i==='')return;let x=getBook()[Number(i)];if(x){$('destination').value=x.destination;if(widgets[1])widgets[1].value=x.destination;calc()}};$('remove').onclick=()=>{let i=$('book').value;if(i==='')return;if(!confirm('Bestemming verwijderen?'))return;let b=getBook();b.splice(Number(i),1);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender()};$('print').onclick=()=>window.print();$('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');location.reload()};for(const id of fields)$(id).addEventListener('input',calc);try{let saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(let id of fields)if(saved[id]!==undefined)$(id).value=saved[id];$('apiKey').value=''}catch(e){}bookRender();calc();try{if(localStorage.getItem(mapsKeyName))initMaps()}catch(e){};})();
 </script></body></html>
