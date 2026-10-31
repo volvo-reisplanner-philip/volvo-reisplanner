@@ -102,7 +102,7 @@ $('clearKey').onclick=()=>{
     const title=document.createElement('h3');title.textContent=p.AddressInfo?.Title||'Openbare laadpaal';el.appendChild(title);
     const address=document.createElement('p');address.className='muted';address.textContent=[p.AddressInfo?.AddressLine1,p.AddressInfo?.Town,p.AddressInfo?.Country?.Title].filter(Boolean).join(', ');el.appendChild(address);
     const detail=document.createElement('p');detail.className='muted';detail.textContent=Math.round(walking)+' m lopen · Type 2 · Shuttel-tarief onbekend · beschikbaarheid niet bevestigd';el.appendChild(detail);
-    const link=document.createElement('a');link.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(p.coords.lat+','+p.coords.lng)+'&travelmode=walking';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Looproute in Google Maps ↗';el.appendChild(link);
+    cconst link=document.createElement('a');link.href='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent($('destination').value.trim())+'&destination='+encodeURIComponent(p.coords.lat+','+p.coords.lng)+'&travelmode=walking';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Looproute in Google Maps ↗';el.appendChild(link);
     $('chargers').appendChild(el);
    }
    chargeMessage(displayed.length+' laadpaal'+(displayed.length===1?'':'locaties')+' gevonden binnen 300 m lopen. Gerangschikt op loopafstand, niet op prijs. Shuttel-tarieven en bezetting onbekend.'+(candidates.length>25?' Er zijn maximaal 25 kandidaten gecontroleerd.':''),true);
