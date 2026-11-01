@@ -181,5 +181,35 @@ def main():
                 print("Connector-ID:", connector.get("id"))
                 print("Tarief-ID's:", connector.get("tariff_ids"))
                 print("Connectorgegevens:", connector)
+def schrijf_testbestand():
+    from pathlib import Path
+    from datetime import datetime, timezone
+
+    locaties = download_ndw(LOCATIES_URL)
+
+    resultaat = {
+        "bijgewerkt": datetime.now(timezone.utc).isoformat(),
+        "bron": "NDW Open Data",
+        "laadpalen": []
+    }
+
+    for locatie in locaties[:5]:
+        resultaat["laadpalen"].append({
+            "id": locatie.get("id"),
+            "naam": locatie.get("name"),
+            "plaats": locatie.get("city"),
+            "adres": locatie.get("address"),
+            "coordinaten": locatie.get("coordinates")
+        })
+
+    uitvoerbestand = Path("data/laadprijzen.json")
+    uitvoerbestand.parent.mkdir(parents=True, exist_ok=True)
+
+    uitvoerbestand.write_text(
+        json.dumps(resultaat, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+    print("Testbestand aangemaakt met 5 laadlocaties.")
 if __name__ == "__main__":
     main()
