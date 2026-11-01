@@ -8,11 +8,16 @@ import json
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+from collections import defaultdict
+import shutil
+import math
 
 LOCATIES_URL = "https://opendata.ndw.nu/charging_point_locations_ocpi.json.gz"
 TARIEVEN_URL = "https://opendata.ndw.nu/charging_point_tariffs_ocpi.json.gz"
 UITVOER = Path("data/laadprijzen.json")
 MAX_BYTES = 95_000_000  # Ruim onder GitHub's limiet van 100 MB.
+TEGELS_MAP = Path("data/laadpunten")
+TEGEL_GROOTTE = 0.25  # graden; ook de aangrenzende tegels doorzoeken voor 500 meter
 
 
 def download_ndw(url):
@@ -129,6 +134,58 @@ def main():
         raise RuntimeError("Catalogus is nog te groot voor GitHub. Geen bestand geschreven; opsplitsen is nodig.")
     UITVOER.write_text(inhoud, encoding="utf-8")
     print(f"Opgeslagen: {UITVOER}")
+
+    # Kleine geografische deelbestanden voor snel zoeken op een iPhone.
+    # Iedere tegel bevat alleen de tarieven die de laadpalen in die tegel gebruiken.
+    tegels = defaultdict(list)
+    overgeslagen = 0
+    for paal in laadpalen:
+        try:
+            lat, lon = float(paal["lat"]), float(paal["lon"])
+            if not (math.isfinite(lat) and math.isfinite(lon)):
+                raise ValueError("Ongeldige coördinaten")
+            sleutel = (math.floor(lat / TEGEL_GROOTTE), math.floor(lon / TEGEL_GROOTTE))
+            tegels[sleutel].append(paal)
+        except (TypeError, ValueError):
+            overgeslagen += 1
+
+    # Pas opruimen nadat de NDW-download en de volledige catalogus zijn gelukt.
+    if TEGELS_MAP.exists():
+        shutil.rmtree(TEGELS_MAP)
+    TEGELS_MAP.mkdir(parents=True, exist_ok=True)
+    register = {}
+    for (lat_index, lon_index), palen in sorted(tegels.items()):
+        naam = f"tegel_{lat_index}_{lon_index}.json"
+        gebruikte_refs = {
+            ref
+            for paal in palen
+            for aansluiting in paal["aansluitingen"]
+            for ref in aansluiting["tarieven"]
+        }
+        deel = {
+            "bijgewerkt": resultaat["bijgewerkt"],
+            "bron": resultaat["bron"],
+            "laadpalen": palen,
+            "tarieven": {ref: gebruikte_tarieven[ref] for ref in sorted(gebruikte_refs)},
+        }
+        pad = TEGELS_MAP / naam
+        pad.write_text(json.dumps(deel, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        if pad.stat().st_size >= MAX_BYTES:
+            raise RuntimeError(f"Geografisch deelbestand te groot: {pad}")
+        register[f"{lat_index}_{lon_index}"] = {"bestand": naam, "aantal": len(palen)}
+
+    manifest = {
+        "bijgewerkt": resultaat["bijgewerkt"],
+        "bron": resultaat["bron"],
+        "tegel_grootte_graden": TEGEL_GROOTTE,
+        "tegels": register,
+        "opmerking": resultaat["opmerking"],
+    }
+    (TEGELS_MAP / "index.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+    )
+    print(f"Geografische deelbestanden: {len(register)}; locaties zonder bruikbare coördinaten: {overgeslagen}")
+    print(f"Manifest: {TEGELS_MAP / 'index.json'}")
 
 
 if __name__ == "__main__":
