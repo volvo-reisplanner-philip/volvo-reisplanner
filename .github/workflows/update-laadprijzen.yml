@@ -3,7 +3,7 @@ name: Volvo Reisplanner - NDW laadprijzen
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '2-59/5 * * * *'
 
 jobs:
   download-laadprijzen:
