@@ -1,6 +1,5 @@
 name: Volvo Reisplanner - NDW laadprijzen
 
-on:
   on:
   workflow_dispatch:
   schedule:
