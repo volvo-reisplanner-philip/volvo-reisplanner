@@ -25,7 +25,18 @@ def main():
     print("Type tariefgegevens:", type(tarieven).__name__)
     print("Aantal locaties:", len(locaties))
     print("Aantal tarieven:", len(tarieven))
+    from collections import Counter
 
+    soorten = Counter()
+
+    for tarief in tarieven:
+        for element in tarief.get("elements", []):
+            for onderdeel in element.get("price_components", []):
+                soorten[onderdeel.get("type", "ONBEKEND")] += 1
+
+    print("Overzicht prijscomponenten:")
+    for soort, aantal in soorten.most_common():
+        print(f"{soort}: {aantal}")
     if locaties:
         print("Velden eerste locatie:", list(locaties[0].keys()))
 
