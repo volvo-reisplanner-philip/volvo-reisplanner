@@ -1,5 +1,56 @@
 {
-  "bijgewerkt": null,
+  "bijgewerkt": "2026-11-01T06:01:28.627915+00:00",
   "bron": "NDW Open Data",
-  "laadpalen": []
+  "laadpalen": [
+    {
+      "id": "89035440",
+      "naam": "EQUANS SGZH 1.0 89263261",
+      "plaats": "Schiedam",
+      "adres": "Strickledeweg 13",
+      "coordinaten": {
+        "latitude": "51.9289740",
+        "longitude": "4.4108340"
+      }
+    },
+    {
+      "id": "9a109ccb-cc1d-4dbd-97b1-09de486dfdc2",
+      "naam": "Sint Jansplein",
+      "plaats": "Waalwijk",
+      "adres": "Sint Jansplein 94",
+      "coordinaten": {
+        "latitude": "51.689449",
+        "longitude": "5.068779"
+      }
+    },
+    {
+      "id": "NLLOC002560",
+      "naam": "NLD, Tilburg, Vincentiusstraat 1",
+      "plaats": "Tilburg",
+      "adres": "Vincentiusstraat 1",
+      "coordinaten": {
+        "latitude": "51.5561070",
+        "longitude": "5.0798660"
+      }
+    },
+    {
+      "id": "a34d4a48-0dac-4075-8219-6b3b8d75c06e",
+      "naam": null,
+      "plaats": "Nieuwkoop",
+      "adres": "Joris Zudde 28",
+      "coordinaten": {
+        "latitude": "52.145420",
+        "longitude": "4.767997"
+      }
+    },
+    {
+      "id": "89258262",
+      "naam": "EQUANS SGZH 2.0 89258262",
+      "plaats": "Ridderkerk",
+      "adres": "Karper 124",
+      "coordinaten": {
+        "latitude": "51.8618910",
+        "longitude": "4.6209950"
+      }
+    }
+  ]
 }
