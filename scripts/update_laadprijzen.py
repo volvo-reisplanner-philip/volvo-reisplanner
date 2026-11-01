@@ -65,6 +65,23 @@ def main():
         "Tarieven met positieve startkosten:",
         tarieven_met_positieve_startkosten
     )
+    vaste_bedragen = []
+
+    for tarief in tarieven:
+        for element in tarief.get("elements", []):
+            for onderdeel in element.get("price_components", []):
+                if onderdeel.get("type") == "FLAT":
+                    bedrag = float(onderdeel.get("price") or 0)
+                    if bedrag > 0:
+                        vaste_bedragen.append(bedrag)
+
+    if vaste_bedragen:
+        print("Laagste vaste kosten:", min(vaste_bedragen))
+        print("Hoogste vaste kosten:", max(vaste_bedragen))
+        print(
+            "Gemiddelde vaste kosten:",
+            round(sum(vaste_bedragen) / len(vaste_bedragen), 2)
+        )
     for soort, aantal in soorten.most_common():
         print(f"{soort}: {aantal}")
     if locaties:
