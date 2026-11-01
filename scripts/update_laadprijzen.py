@@ -16,7 +16,15 @@ def download_ndw(url):
 def main():
     print("NDW-laadlocaties downloaden...")
     locaties = download_ndw(LOCATIES_URL)
+    tarieven = download_ndw(TARIEVEN_URL)
 
+    tarieven_op_id = {}
+
+    for tarief in tarieven:
+        sleutel = str(tarief.get("id"))
+        tarieven_op_id.setdefault(sleutel, []).append(tarief)
+
+    print("Aantal verschillende tarief-ID's:", len(tarieven_op_id))
     print("NDW-laadtarieven downloaden...")
     tarieven = download_ndw(TARIEVEN_URL)
 
