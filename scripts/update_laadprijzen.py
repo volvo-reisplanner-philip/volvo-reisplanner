@@ -193,13 +193,26 @@ def schrijf_testbestand():
         "laadpalen": []
     }
 
-    for locatie in locaties[:5]:
+       for locatie in locaties[:5]:
+        aansluitingen = []
+
+        for evse in locatie.get("evses") or []:
+            for connector in evse.get("connectors") or []:
+                if connector.get("standard") == "IEC_62196_T2":
+                    aansluitingen.append({
+                        "evse_id": evse.get("evse_id"),
+                        "status": evse.get("status"),
+                        "type": connector.get("standard"),
+                        "tarief_ids": connector.get("tariff_ids") or []
+                    })
+
         resultaat["laadpalen"].append({
             "id": locatie.get("id"),
             "naam": locatie.get("name"),
             "plaats": locatie.get("city"),
             "adres": locatie.get("address"),
-            "coordinaten": locatie.get("coordinates")
+            "coordinaten": locatie.get("coordinates"),
+            "aansluitingen": aansluitingen
         })
 
     uitvoerbestand = Path("data/laadprijzen.json")
