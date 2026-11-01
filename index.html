@@ -73,7 +73,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 <p class="muted">Vereenvoudigde kostenraming; werkelijke hybride aandrijving kan afwijken. Niet-verbruikte geladen energie is niet meegerekend.</p>
 </section>
 <section class="card"><h2>4. Openbare AC-Type 2-laadpalen – NDW</h2>
-<div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="number" min="0.1" max="200" step="0.5" value="10"></div></div>
+<div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="number" min="0.1" max="200" step="0.5" value="10"></div><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="number" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale parkeertijd (minuten)</label><input id="parkingMinutes" type="number" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="number" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="number" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten (€)</label><input id="parkingFee" type="number" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur.</p>
 <div class="actions"><button id="refresh">Zoek laadpalen bij bestemming</button></div>
 <div id="chargeStatus" class="status" role="status">Verbind Google Maps in onderdeel 5 en zoek laadpalen.</div>
 <div id="chargers"></div>
@@ -187,34 +187,39 @@ const ndwBase='data/laadpunten/';
 async function readJson(url){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Kan '+url+' niet ophalen (HTTP '+r.status+').');return r.json()}
 function basicPrice(tariff,kwh){
  if(!tariff||tariff.valuta!=='EUR'||!Array.isArray(tariff.prijsopbouw)||tariff.prijsopbouw.length!==1)return null;
- const now=Date.now();
- if(tariff.geldig_vanaf&&Date.parse(tariff.geldig_vanaf)>now)return null;
+ const now=Date.now();if(tariff.geldig_vanaf&&Date.parse(tariff.geldig_vanaf)>now)return null;
  if(tariff.geldig_tot&&Date.parse(tariff.geldig_tot)<now)return null;
- const e=tariff.prijsopbouw[0];
- const conditions=e.voorwaarden||{};
- const allowedConditions=['start_date','end_date'];
- if(Object.keys(conditions).some(k=>!allowedConditions.includes(k)))return null;
+ const e=tariff.prijsopbouw[0],conditions=e.voorwaarden||{};
+ if(Object.keys(conditions).some(k=>!['start_date','end_date'].includes(k)))return null;
  const today=new Date().toISOString().slice(0,10);
- if(conditions.start_date && (!/^\d{4}-\d{2}-\d{2}$/.test(conditions.start_date)||today<conditions.start_date))return null;
- if(conditions.end_date && (!/^\d{4}-\d{2}-\d{2}$/.test(conditions.end_date)||today>conditions.end_date))return null;
- let energy=null,flat=0;const types=new Set();
+ if(conditions.start_date&&(!/^\d{4}-\d{2}-\d{2}$/.test(conditions.start_date)||today<conditions.start_date))return null;
+ if(conditions.end_date&&(!/^\d{4}-\d{2}-\d{2}$/.test(conditions.end_date)||today>conditions.end_date))return null;
+ const chargeMin=n('chargeMinutes'),parkMin=n('parkingMinutes');if(parkMin<chargeMin)return null;
+ const components={},types=new Set();let energy=null,flat=0,time=0,parking=0;
  for(const c of e.componenten||[]){
-  const type=c.type,price=Number(c.prijs);
-  if(!['ENERGY','FLAT','TIME','PARKING_TIME'].includes(type)||types.has(type)||c.prijs===null||!Number.isFinite(price)||price<0)return null;
+  const type=c.type,price=Number(c.prijs),vat=Number(c.btw??0),step=Number(c.stap??1);
+  if(!['ENERGY','FLAT','TIME','PARKING_TIME'].includes(type)||types.has(type)||c.prijs===null||!Number.isFinite(price)||price<0||!Number.isFinite(vat)||vat<0||vat>100||!Number.isFinite(step)||step<=0)return null;
   types.add(type);
+  // OCPI step: ENERGY in Wh; TIME/PARKING_TIME in seconds. NDW step=1 is common.
+  const quantity=type==='ENERGY'?Math.ceil(kwh*1000/step)*step/1000:type==='FLAT'?1:Math.ceil((type==='TIME'?chargeMin:parkMin)*60/step)*step/3600;
+  const net=price*quantity,gross=net*($('vatMode').value==='exclusive'?1+vat/100:1);
+  components[type]={net,gross,unitPrice:price,vat,quantity};
   if(type==='ENERGY')energy=price;
-  else if(type==='FLAT')flat=price;
-  else if(price!==0)return null; // Tijd- en parkeertarieven > 0 vereisen een tijdsraming.
+  else if(type==='FLAT')flat=gross;
+  else if(type==='TIME')time=gross;
+  else parking=gross;
  }
  if(energy===null)return null;
- return {total:energy*kwh+flat,energy,flat,vat:'Btw-behandeling niet geverifieerd'};
+ const ndwTotal=Object.values(components).reduce((sum,c)=>sum+c.gross,0);
+ const extras=n('shuttelFee')+kwh*n('shuttelMarkup')+n('parkingFee');
+ return {total:ndwTotal+extras,ndwTotal,extras,energy,flat,time,parking,components,vatMode:$('vatMode').value};
 }
 function bestPrice(point,tariffs,kwh){
  const options=[];
  for(const connector of point.aansluitingen||[]){
   if(['REMOVED','INOPERATIVE','OUTOFORDER','PLANNED'].includes(connector.status))continue;
   if((connector.onbekende_tarieven||[]).length)continue;
-  for(const key of connector.tarieven||[]){const p=basicPrice(tariffs[key],kwh);if(p)options.push({...p,connector})}
+  for(const key of connector.tarieven||[]){const p=basicPrice(tariffs[key],kwh);if(p)options.push({...p,connector,tariffKey:key})}
  }
  options.sort((a,b)=>a.total-b.total);return options[0]||null;
 }
@@ -276,9 +281,22 @@ $('refresh').onclick=async()=>{
    diagnostic.textContent=JSON.stringify({bestand:x.sourceFile,laadpaalId:x.p.id,tariefcodes:x.tariffKeys,tariefDefinities:x.tariffDefinitions,onbekendeTarieven:x.unknownTariffs,aansluitingen:x.p.aansluitingen},null,2);
    details.appendChild(diagnostic);el.appendChild(details);
    if(x.tariff){
-    addText(el,'p','NDW-indicatie '+money(x.tariff.energy)+'/kWh · '+fmt(kwh)+' kWh: '+money(x.tariff.total)+(x.tariff.flat?' (inclusief '+money(x.tariff.flat)+' vast tarief)':'')+'. Btw en Shuttel-opslag niet geverifieerd.','muted');
+    const matching=(x.p.aansluitingen||[]).filter(c=>c.id && (c.tarieven||[]).includes(x.tariff.tariffKey) && !['REMOVED','INOPERATIVE','OUTOFORDER','PLANNED'].includes(c.status) && !(c.onbekende_tarieven||[]).length);
+    addText(el,'p','Goedkoopste tariefcode: '+x.tariff.tariffKey+' · '+matching.length+' bijbehorende aansluiting(en).','muted');
+    for(const c of matching){addText(el,'p','Aansluiting '+c.id+' · status: '+(c.status||'onbekend'),'muted');}
+    const alternatives=[];
+    for(const c of x.p.aansluitingen||[]){
+     for(const key of c.tarieven||[]){const price=basicPrice(x.tariffDefinitions?.[key],kwh);if(price && key!==x.tariff.tariffKey)alternatives.push({key,id:c.id,status:c.status,total:price.total,energy:price.energy});}
+    }
+    if(alternatives.length){
+     const d=document.createElement('details');const sm=document.createElement('summary');sm.textContent='Andere aansluitingen en tarieven ('+alternatives.length+')';d.appendChild(sm);
+     for(const a of alternatives){addText(d,'p',a.id+' · '+a.key+' · '+money(a.energy)+'/kWh · '+fmt(kwh)+' kWh: '+money(a.total)+' · '+(a.status||'onbekend'),'muted');}
+     el.appendChild(d);
+    }
+    addText(el,'p','Geschatte totale laadsessie: '+money(x.tariff.total)+' voor '+fmt(kwh)+' kWh (NDW incl. gekozen btw-aanname: '+money(x.tariff.ndwTotal)+'; extra opgegeven kosten: '+money(x.tariff.extras)+').','muted');
+    addText(el,'p','Uitsplitsing: energie '+money(x.tariff.components.ENERGY?.gross||0)+' · start '+money(x.tariff.flat)+' · laadtijd '+money(x.tariff.time)+' · parkeertijd '+money(x.tariff.parking)+'. Werkelijke Shuttel-eindprijs en eventuele extra kosten onbekend.','muted');
     const apply=document.createElement('button');apply.className='secondary';apply.textContent='Neem kWh-tarief over in ritberekening';
-    apply.onclick=()=>{$('publicPrice').value=x.tariff.energy.toFixed(4);$('startFee').value=x.tariff.flat.toFixed(2);calc();chargeMessage('Indicatief NDW-tarief overgenomen; controleer de werkelijke Shuttel-eindprijs.')};
+    apply.onclick=()=>{$('publicPrice').value=(x.tariff.components.ENERGY.gross/x.tariff.components.ENERGY.quantity+n('shuttelMarkup')).toFixed(4);$('startFee').value=(x.tariff.flat+x.tariff.time+x.tariff.parking+n('shuttelFee')+n('parkingFee')).toFixed(2);calc();chargeMessage('Kosten overgenomen op basis van de ingevulde kWh, duur en btw-aanname; controleer de werkelijke Shuttel-eindprijs.')};
     el.appendChild(apply);
    }else addText(el,'p','Tarief onbekend – geen betrouwbaar berekenbare totale laadprijs.','muted');
    const link=document.createElement('a');
@@ -337,6 +355,7 @@ $('remove').onclick=()=>{const i=$('book').value;if(i===''||!confirm('Bestemming
 $('print').onclick=()=>window.print();
 $('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');location.reload()};
 for(const id of fields)$(id).addEventListener('input',calc);
+for(const id of ['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee'])$(id).addEventListener('change',()=>{chargeMessage('Instellingen gewijzigd: klik opnieuw op Zoek laadpalen om prijzen te herberekenen.');});
 try{const saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(const id of fields)if(saved[id]!==undefined){if(id==='origin' && ['Beekbergen, Nederland','Beekbergen'].includes(String(saved[id]).trim()))continue;$(id).value=saved[id]}}catch(e){}
 bookRender();updateManualCapacity();checkRangeWarning();calc();
 try{if(localStorage.getItem(mapsKeyName))initMaps()}catch(e){}
