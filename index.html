@@ -219,13 +219,16 @@ async function nearbyNdw(dest){
  for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++){const key=(i+di)+'_'+(j+dj);if(index.tegels?.[key])keys.push(index.tegels[key].bestand)}
  const tiles=await Promise.all(keys.map(name=>readJson(ndwBase+encodeURIComponent(name))));
  const points=new Map();
- for(const tile of tiles)for(const p of tile.laadpalen||[]){
+ for(let tileIndex=0;tileIndex<tiles.length;tileIndex++){
+ const tile=tiles[tileIndex],sourceFile=keys[tileIndex];
+ for(const p of tile.laadpalen||[]){
   const lat=Number(p.lat),lng=Number(p.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lng)||lat<50||lat>54||lng<3||lng>8)continue;
   const coords={lat,lng},straight=haversine(dest,coords);if(straight>500)continue;
   const tariff=bestPrice(p,tile.tarieven||{},Number($('chargeKwh').value));
   const id=String(p.id||lat+','+lng);
-  if(!points.has(id))points.set(id,{p,coords,straight,tariff});
+  if(!points.has(id))points.set(id,{p,coords,straight,tariff,sourceFile,tariffKeys:[...new Set((p.aansluitingen||[]).flatMap(c=>c.tarieven||[]))],unknownTariffs:(p.aansluitingen||[]).some(c=>(c.onbekende_tarieven||[]).length>0),tariffDefinitions:Object.fromEntries([...new Set((p.aansluitingen||[]).flatMap(c=>c.tarieven||[]))].map(k=>[k,tile.tarieven?.[k]??null]))});
+ }
  }
  return {points:[...points.values()],updated:index.bijgewerkt};
 }
@@ -261,6 +264,11 @@ $('refresh').onclick=async()=>{
    const statuses=[...new Set(statusList.map(c=>c.status||'UNKNOWN'))].join(', ');
    const latest=statusList.map(c=>c.bijgewerkt).filter(Boolean).sort().at(-1)||'onbekend';
    addText(el,'p',Math.round(x.walk)+' m lopen · status: '+(statuses||'onbekend')+' · statusupdate: '+latest,'muted');
+   const details=document.createElement('details');
+   const summary=document.createElement('summary');summary.textContent='Technische NDW-gegevens (tariefcontrole)';details.appendChild(summary);
+   const diagnostic=document.createElement('pre');diagnostic.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f1f5f7;padding:10px;border-radius:8px';
+   diagnostic.textContent=JSON.stringify({bestand:x.sourceFile,laadpaalId:x.p.id,tariefcodes:x.tariffKeys,tariefDefinities:x.tariffDefinitions,onbekendeTarieven:x.unknownTariffs,aansluitingen:x.p.aansluitingen},null,2);
+   details.appendChild(diagnostic);el.appendChild(details);
    if(x.tariff){
     addText(el,'p','NDW-indicatie '+money(x.tariff.energy)+'/kWh · '+fmt(kwh)+' kWh: '+money(x.tariff.total)+(x.tariff.flat?' (inclusief '+money(x.tariff.flat)+' vast tarief)':'')+'. Btw en Shuttel-opslag niet geverifieerd.','muted');
     const apply=document.createElement('button');apply.className='secondary';apply.textContent='Neem kWh-tarief over in ritberekening';
