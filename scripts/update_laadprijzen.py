@@ -33,7 +33,23 @@ def main():
         for element in tarief.get("elements", []):
             for onderdeel in element.get("price_components", []):
                 soorten[onderdeel.get("type", "ONBEKEND")] += 1
+    tarieven_met_parkeerkosten = 0
 
+    for tarief in tarieven:
+        heeft_parkeerkosten = any(
+            onderdeel.get("type") == "PARKING_TIME"
+            and float(onderdeel.get("price") or 0) > 0
+            for element in tarief.get("elements", [])
+            for onderdeel in element.get("price_components", [])
+        )
+
+        if heeft_parkeerkosten:
+            tarieven_met_parkeerkosten += 1
+
+    print(
+        "Tarieven met positieve parkeertijdkosten:",
+        tarieven_met_parkeerkosten
+    )
     print("Overzicht prijscomponenten:")
     tarieven_met_startkosten = 0
 
