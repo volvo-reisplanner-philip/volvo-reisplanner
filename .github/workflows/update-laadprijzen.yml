@@ -1,0 +1,20 @@
+name: Volvo Reisplanner - NDW laadprijzen
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download-laadprijzen:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Bestanden ophalen
+        uses: actions/checkout@v4
+
+      - name: Python installeren
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: NDW-download testen
+        run: python scripts/update_laadprijzen.py
