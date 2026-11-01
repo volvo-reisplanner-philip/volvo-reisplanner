@@ -40,5 +40,9 @@ def main():
             eerste_evse = eerste_locatie["evses"][0]
             print("Velden eerste aansluiting:", list(eerste_evse.keys()))
             print("Eerste aansluiting:", eerste_evse)
+            for connector in eerste_evse.get("connectors", []):
+                print("Connector-ID:", connector.get("id"))
+                print("Tarief-ID's:", connector.get("tariff_ids"))
+                print("Connectorgegevens:", connector)
 if __name__ == "__main__":
     main()
