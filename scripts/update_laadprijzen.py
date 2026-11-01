@@ -31,6 +31,14 @@ def main():
 
     if tarieven:
         print("Velden eerste tarief:", list(tarieven[0].keys()))
+    if locaties:
+        eerste_locatie = locaties[0]
+        print("Eerste locatie-ID:", eerste_locatie.get("id"))
+        print("Aantal aansluitingen:", len(eerste_locatie.get("evses") or []))
 
+        if eerste_locatie.get("evses"):
+            eerste_evse = eerste_locatie["evses"][0]
+            print("Velden eerste aansluiting:", list(eerste_evse.keys()))
+            print("Eerste aansluiting:", eerste_evse)
 if __name__ == "__main__":
     main()
