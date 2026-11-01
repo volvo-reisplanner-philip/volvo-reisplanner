@@ -213,3 +213,4 @@ def schrijf_testbestand():
     print("Testbestand aangemaakt met 5 laadlocaties.")
 if __name__ == "__main__":
     main()
+    schrijf_testbestand()
