@@ -183,6 +183,14 @@ async function walkingDistance(start,end){
  const response=await routeClass.computeRoutes({origin:start,destination:end,travelMode:'WALKING',fields:['distanceMeters']});
  const meters=response.routes?.[0]?.distanceMeters;return Number.isFinite(meters)?meters:null;
 }
+// Historische zakelijke Shuttel-transacties 2026; Beekbergen uitgesloten. Alleen positieve laadkosten.
+const shuttelHistory=[{"street":"Piet van Donkplein 1","city":"Deventer","sessions":1,"kwh":6.382,"cost":2.84,"last":"2026-01-17"},{"street":"Nieuwe Markt 3a","city":"Barneveld","sessions":4,"kwh":28.471,"cost":16.61,"last":"2026-06-27"},{"street":"Bastion 73","city":"Veenendaal","sessions":1,"kwh":11.84,"cost":7.47,"last":"2026-03-11"},{"street":"Liendertseweg 37","city":"Amersfoort","sessions":1,"kwh":9.611,"cost":6.48,"last":"2026-03-21"},{"street":"Noorderstraat 11","city":"Gouda","sessions":2,"kwh":20.399,"cost":9.38,"last":"2026-06-04"},{"street":"Verzetsplein 4","city":"Amersfoort","sessions":1,"kwh":10.055,"cost":6.84,"last":"2026-04-18"},{"street":"Parkstraat 14","city":"Gouda","sessions":1,"kwh":8.27,"cost":3.1,"last":"2026-04-19"},{"street":"Cambridgelaan 0","city":"Utrecht","sessions":1,"kwh":13.15,"cost":5.680000000000001,"last":"2026-06-19"},{"street":"Opijnenstraat 25","city":"Hoogland","sessions":1,"kwh":9.12,"cost":6.119999999999999,"last":"2026-06-21"},{"street":"Joseph Haydnlaan2A","city":"Utrecht","sessions":1,"kwh":0.573,"cost":0.25,"last":"2026-07-18"},{"street":"Hendrika van Tussenbroeklaan 3","city":"Utrecht","sessions":1,"kwh":12.31,"cost":6.7,"last":"2026-07-18"},{"street":"Burgm. G.R. Vonklaan 4","city":"Bodegraven","sessions":4,"kwh":47.365,"cost":29.880000000000003,"last":"2026-10-29"},{"street":"De Violieren 16","city":"Apeldoorn","sessions":2,"kwh":2.06,"cost":0.8799999999999999,"last":"2026-09-21"},{"street":"2 Kruisboog","city":"Houten","sessions":1,"kwh":16.41,"cost":8.129999999999999,"last":"2026-10-02"},{"street":"Heereweg403","city":"Schoorl","sessions":1,"kwh":16.206,"cost":16.95,"last":"2026-10-09"},{"street":"Heereweg395","city":"Schoorl","sessions":1,"kwh":7.035,"cost":9.08,"last":"2026-10-10"},{"street":"Nico Bolkesteinlaan 75","city":"DEVENTER","sessions":1,"kwh":4.005,"cost":1.98,"last":"2026-10-14"},{"street":"Van Heutszstraat 29","city":"Den Haag","sessions":1,"kwh":15.501,"cost":7.36,"last":"2026-10-25"}];
+function locationKey(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
+function historicalShuttel(p){
+ const street=locationKey(p.adres),city=locationKey(p.plaats);
+ if(!street||!city||city.includes('beekbergen'))return null;
+ return shuttelHistory.find(h=>locationKey(h.street)===street&&locationKey(h.city)===city)||null;
+}
 const ndwBase='data/laadpunten/';
 async function readJson(url){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Kan '+url+' niet ophalen (HTTP '+r.status+').');return r.json()}
 function basicPrice(tariff,kwh){
@@ -275,6 +283,11 @@ $('refresh').onclick=async()=>{
    const statuses=[...new Set(statusList.map(c=>c.status||'UNKNOWN'))].join(', ');
    const latest=statusList.map(c=>c.bijgewerkt).filter(Boolean).sort().at(-1)||'onbekend';
    addText(el,'p',Math.round(x.walk)+' m lopen · status: '+(statuses||'onbekend')+' · statusupdate: '+latest,'muted');
+   const hist=historicalShuttel(x.p);
+   if(hist){
+    const rate=hist.cost/hist.kwh;
+    addText(el,'p','Historisch Shuttel (2026, eigen laadpas): '+hist.sessions+' sessie(s) · '+fmt(hist.kwh)+' kWh · '+money(hist.cost)+' totaal · gemiddeld '+money(rate)+'/kWh. Ter vergelijking: '+fmt(kwh)+' kWh ≈ '+money(rate*kwh)+' op basis van eerdere sessies. Laatste sessie: '+hist.last+'. Dit is geen actueel tarief en bevat mogelijk tijd-/startkosten.','muted');
+   }
    const details=document.createElement('details');
    const summary=document.createElement('summary');summary.textContent='Technische NDW-gegevens (tariefcontrole)';details.appendChild(summary);
    const diagnostic=document.createElement('pre');diagnostic.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f1f5f7;padding:10px;border-radius:8px';
