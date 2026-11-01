@@ -80,7 +80,8 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 </section>
 </div><div class="view" data-view="laden" hidden><section class="card"><h2>Laadpalen bij bestemming</h2>
 <div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="number" min="0.1" max="200" step="0.5" value="10"></div></div><details class="info"><summary>⚙️ Laadduur, btw en bijkomende kosten</summary><div class="grid"><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="number" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale parkeertijd (minuten)</label><input id="parkingMinutes" type="number" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="number" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="number" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten (€)</label><input id="parkingFee" type="number" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur.</p></details>
-<div class="actions"><button id="refresh">Zoek laadpalen bij bestemming</button></div>
+<div class="actions"><button id="refresh">🔄 Controleer laadpalen opnieuw</button></div>
+<div id="dataFreshness" class="status" role="status">Nog niet gecontroleerd. De controle haalt de nieuwste beschikbare GitHub/NDW-momentopname op, geen live exploitantstatus.</div>
 <p class="muted">Voor vertrek: controle op NDW-status, ouderdom en je eigen meldingen. Fysieke aanwezigheid kan niet automatisch worden bevestigd.</p>
 <div id="chargeStatus" class="status" role="status">Verbind Google Maps in onderdeel 5 en zoek laadpalen.</div>
 <div id="chargers"></div>
@@ -290,13 +291,13 @@ function reliability(x){
 // Twee niveaus: recente AVAILABLE groen; oudere AVAILABLE oranje.
 // Niet-AVAILABLE en eigen defect/niet-gevonden meldingen worden niet aanbevolen.
 const MAX_STATUS_AGE_HOURS=6;
-function eligibleCharger(x,kwh){
+function eligibleCharger(x,kwh,datasetAgeHours){
  const report=reportFor(x);
  if(report?.kind==='broken'||report?.kind==='missing')return null;
  const eligible=(x.p.aansluitingen||[]).filter(c=>c.status==='AVAILABLE');
  if(!eligible.length)return null;
  const recent=eligible.filter(c=>{const t=Date.parse(c.bijgewerkt);return Number.isFinite(t)&&t<=Date.now()&&Date.now()-t<=MAX_STATUS_AGE_HOURS*3600000});
- const tier=recent.length?0:1;
+ const tier=recent.length && datasetAgeHours<=MAX_STATUS_AGE_HOURS?0:1;
  const chosen=recent.length?recent:eligible;
  const options=[];
  for(const connector of chosen){
@@ -312,6 +313,11 @@ $('refresh').onclick=async()=>{
  try{
   const kwh=Number($('chargeKwh').value);if(!Number.isFinite(kwh)||kwh<=0||kwh>200)throw Error('Vul 0,1 tot 200 kWh in.');
   const dest=await destinationCoords(),{points,updated}=await nearbyNdw(dest);
+  const updatedTime=Date.parse(updated);
+  const datasetAgeHours=Number.isFinite(updatedTime)?Math.max(0,(Date.now()-updatedTime)/3600000):Infinity;
+  const datasetTime=Number.isFinite(updatedTime)?new Date(updatedTime).toLocaleString('nl-NL'):'onbekend';
+  $('dataFreshness').textContent='Controle uitgevoerd: '+new Date().toLocaleString('nl-NL')+'. NDW-bronbestand bijgewerkt: '+datasetTime+'. '+(datasetAgeHours<=6?'Bronbestand maximaal 6 uur oud.':'⚠️ Bronbestand ouder dan 6 uur of onbekend: actuele beschikbaarheid kan niet worden bevestigd.')+' Dit is geen live controle bij de exploitant.';
+  $('dataFreshness').className='status'+(datasetAgeHours<=6?' success':'');
   if(!points.length){chargeMessage('Geen NDW-laadlocaties binnen 500 m hemelsbreed gevonden.');return}
   // Controleer alle geografische kandidaten: niet slechts de eerste 60.
   // Kleine batches beperken piekbelasting; bij fouten melden we dat de lijst onvolledig kan zijn.
@@ -326,7 +332,7 @@ $('refresh').onclick=async()=>{
    for(const r of results){if(r.error||r.walk===null)failures++;else if(r.walk<=500)found.push({...r.point,walk:r.walk})}
    chargeMessage('Looproutes gecontroleerd: '+Math.min(i+8,points.length)+' van '+points.length+'…');
   }
-  const candidates=found.map(x=>eligibleCharger(x,kwh)).filter(Boolean);
+  const candidates=found.map(x=>eligibleCharger(x,kwh,datasetAgeHours)).filter(Boolean);
   const priced=candidates.filter(x=>x.tariff);
   const displayed=candidates.sort((a,b)=>a.tier-b.tier||(a.tariff?.total??Infinity)-(b.tariff?.total??Infinity)||a.walk-b.walk).slice(0,3);
   if(!displayed.length){chargeMessage('Geen laadpalen met een AVAILABLE-melding gevonden binnen 500 m lopen. Bezette, defect gemelde, onbekende en eerder door jou als defect/niet gevonden gemelde locaties zijn niet aanbevolen. De NDW-bestanden zijn momentopnamen, geen live garantie. Probeer later opnieuw of controleer de exploitant.');return}
@@ -340,7 +346,7 @@ $('refresh').onclick=async()=>{
     const available=statusList.filter(c=>c.status==='AVAILABLE').length;
     const trust=reliability(x);
     addText(el,'p',(x.tier===0?'🟢 Recent vrij gemeld':'🟠 Eerder vrij gemeld – opnieuw controleren')+' · 🚶 '+Math.round(x.walk)+' m','mini-line');
-    addText(el,'p',(x.tier===0?'NDW-status maximaal 6 uur oud. ':'NDW-status ouder dan 6 uur of tijdstip onbekend. ')+(x.latestAvailable?'Laatste AVAILABLE-update: '+new Date(x.latestAvailable).toLocaleString('nl-NL')+'. ':'')+'Aanwezigheid en werking niet gegarandeerd.','uncertain');
+    addText(el,'p',(x.tier===0?'NDW-aansluiting én bronbestand maximaal 6 uur oud. ':'Aansluitingsstatus of bronbestand ouder dan 6 uur of onbekend. ')+(x.latestAvailable?'Laatste AVAILABLE-update: '+new Date(x.latestAvailable).toLocaleString('nl-NL')+'. ':'')+'Aanwezigheid en werking niet gegarandeerd.','uncertain');
     addText(el,'p',x.tariff?money(x.tariff.total)+' / '+fmt(kwh)+' kWh':'Tarief onbekend','price-main');
     addText(el,'p','Prijs indicatief · beschikbaarheid kan wijzigen','uncertain');
     const links=document.createElement('div');links.className='navlinks';
