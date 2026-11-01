@@ -190,7 +190,13 @@ function basicPrice(tariff,kwh){
  const now=Date.now();
  if(tariff.geldig_vanaf&&Date.parse(tariff.geldig_vanaf)>now)return null;
  if(tariff.geldig_tot&&Date.parse(tariff.geldig_tot)<now)return null;
- const e=tariff.prijsopbouw[0];if(Object.keys(e.voorwaarden||{}).length)return null;
+ const e=tariff.prijsopbouw[0];
+ const conditions=e.voorwaarden||{};
+ const allowedConditions=['start_date','end_date'];
+ if(Object.keys(conditions).some(k=>!allowedConditions.includes(k)))return null;
+ const today=new Date().toISOString().slice(0,10);
+ if(conditions.start_date && (!/^\d{4}-\d{2}-\d{2}$/.test(conditions.start_date)||today<conditions.start_date))return null;
+ if(conditions.end_date && (!/^\d{4}-\d{2}-\d{2}$/.test(conditions.end_date)||today>conditions.end_date))return null;
  let energy=null,flat=0;const types=new Set();
  for(const c of e.componenten||[]){
   const type=c.type,price=Number(c.prijs);
