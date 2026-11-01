@@ -81,6 +81,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 </div><div class="view" data-view="laden" hidden><section class="card"><h2>Laadpalen bij bestemming</h2>
 <div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="number" min="0.1" max="200" step="0.5" value="10"></div></div><details class="info"><summary>⚙️ Laadduur, btw en bijkomende kosten</summary><div class="grid"><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="number" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale parkeertijd (minuten)</label><input id="parkingMinutes" type="number" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="number" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="number" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten (€)</label><input id="parkingFee" type="number" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur.</p></details>
 <div class="actions"><button id="refresh">Zoek laadpalen bij bestemming</button></div>
+<p class="muted">Voor vertrek: controle op NDW-status, ouderdom en je eigen meldingen. Fysieke aanwezigheid kan niet automatisch worden bevestigd.</p>
 <div id="chargeStatus" class="status" role="status">Verbind Google Maps in onderdeel 5 en zoek laadpalen.</div>
 <div id="chargers"></div>
 <details class="info"><summary>ℹ️ Over de laadpaalgegevens</summary><p class="muted">Volgorde: laagste berekenbare totale NDW-laadkosten, bij gelijke prijs kortste loopafstand. Alleen bevestigde looproutes van maximaal 500 m. Maximaal drie resultaten. Onbekende of tijdsafhankelijke tarieven staan onder berekenbare prijzen. NDW is geen garantie voor Shuttel-acceptatie of Shuttel-eindprijs; btw, beschikbaarheid bij aankomst en gemeentelijke parkeerkosten zijn niet bevestigd.</p></details>
@@ -265,6 +266,27 @@ async function nearbyNdw(dest){
  return {points:[...points.values()],updated:index.bijgewerkt};
 }
 function addText(parent,tag,value,className){const e=document.createElement(tag);if(className)e.className=className;e.textContent=value;parent.appendChild(e);return e}
+// Eigen waarnemingen blijven lokaal op dit apparaat; ze zijn geen officiële storingsmeldingen.
+const reportStorage='volvo-laadpaal-waarnemingen-v1';
+function getReports(){try{return JSON.parse(localStorage.getItem(reportStorage)||'{}')}catch(e){return {}}}
+function reportKey(x){return String(x.p.id||'')+'|'+Number(x.coords.lat).toFixed(5)+'|'+Number(x.coords.lng).toFixed(5)}
+function reportFor(x){return getReports()[reportKey(x)]||null}
+function saveReport(x,kind){const reports=getReports(),key=reportKey(x);if(kind==='clear')delete reports[key];else reports[key]={kind,date:new Date().toISOString()};try{localStorage.setItem(reportStorage,JSON.stringify(reports))}catch(e){alert('Opslaan op dit apparaat is niet gelukt.')}}
+function lastStatusDate(x){const dates=(x.p.aansluitingen||[]).map(c=>Date.parse(c.bijgewerkt)).filter(Number.isFinite);return dates.length?Math.max(...dates):null}
+function reliability(x){
+ const list=(x.p.aansluitingen||[]).filter(c=>c.status!=='REMOVED');
+ const available=list.filter(c=>c.status==='AVAILABLE').length;
+ const broken=list.length>0&&list.every(c=>['INOPERATIVE','OUTOFORDER'].includes(c.status));
+ const last=lastStatusDate(x),age=last===null?Infinity:Math.max(0,(Date.now()-last)/3600000);
+ const report=reportFor(x);
+ if(broken)return {rank:3,label:'🔴 NDW meldt defect',detail:'Alle geregistreerde aansluitingen staan als defect vermeld.'};
+ if(report?.kind==='missing')return {rank:2,label:'⚫ Eerder niet gevonden',detail:'Eigen waarneming '+new Date(report.date).toLocaleDateString('nl-NL')+'; aanwezigheid niet onafhankelijk bevestigd.'};
+ if(report?.kind==='broken')return {rank:2,label:'🔴 Eerder defect gemeld',detail:'Eigen waarneming '+new Date(report.date).toLocaleDateString('nl-NL')+'; controleer of de storing is verholpen.'};
+ if(age>24)return {rank:2,label:'🟠 Status verouderd/onbekend',detail:'Laatste NDW-aansluitingsupdate: '+(last?new Date(last).toLocaleString('nl-NL'):'onbekend')+'.'};
+ if(available)return {rank:0,label:'🟢 Recent vrij gemeld',detail:'NDW meldt '+available+' vrije aansluiting(en); aanwezigheid en werking ter plaatse niet gegarandeerd.'};
+ return {rank:1,label:'🟠 Niet bevestigd vrij',detail:'NDW bevestigt geen vrije aansluiting; aanwezigheid niet onafhankelijk bevestigd.'};
+}
+
 $('refresh').onclick=async()=>{
  const btn=$('refresh');btn.disabled=true;$('chargers').replaceChildren();chargeMessage('NDW-laadpalen en loopafstanden controleren…');
  try{
@@ -284,9 +306,10 @@ $('refresh').onclick=async()=>{
    for(const r of results){if(r.error||r.walk===null)failures++;else if(r.walk<=500)found.push({...r.point,walk:r.walk})}
    chargeMessage('Looproutes gecontroleerd: '+Math.min(i+8,points.length)+' van '+points.length+'…');
   }
-  const priced=found.filter(x=>x.tariff).sort((a,b)=>a.tariff.total-b.tariff.total||a.walk-b.walk);
-  const unpriced=found.filter(x=>!x.tariff).sort((a,b)=>a.walk-b.walk);
-  const displayed=[...priced,...unpriced].slice(0,3);
+  const priced=found.filter(x=>x.tariff);
+  const unpriced=found.filter(x=>!x.tariff);
+  // Betrouwbaarheid vóór prijs; meldingen sluiten locaties niet automatisch uit.
+  const displayed=found.sort((a,b)=>reliability(a).rank-reliability(b).rank||(a.tariff?.total??Infinity)-(b.tariff?.total??Infinity)||a.walk-b.walk).slice(0,3);
   if(!displayed.length){chargeMessage('Geen bevestigde looproutes ≤ 500 m gevonden.'+(failures?' '+failures+' routes mislukt.':''));return}
   for(const x of displayed){
    const el=document.createElement('article');el.className='charger';
@@ -296,7 +319,9 @@ $('refresh').onclick=async()=>{
     const statuses=[...new Set(statusList.map(c=>c.status||'UNKNOWN'))].join(', ');
     const latest=statusList.map(c=>c.bijgewerkt).filter(Boolean).sort().at(-1)||'onbekend';
     const available=statusList.filter(c=>c.status==='AVAILABLE').length;
-    addText(el,'p',(available?'🟢 '+available+' vrij':'🟠 Niet bevestigd vrij')+' · 🚶 '+Math.round(x.walk)+' m','mini-line');
+    const trust=reliability(x);
+    addText(el,'p',trust.label+' · 🚶 '+Math.round(x.walk)+' m','mini-line');
+    addText(el,'p',trust.detail,'uncertain');
     addText(el,'p',x.tariff?money(x.tariff.total)+' / '+fmt(kwh)+' kWh':'Tarief onbekend','price-main');
     addText(el,'p','Prijs indicatief · beschikbaarheid kan wijzigen','uncertain');
     const links=document.createElement('div');links.className='navlinks';
@@ -305,6 +330,17 @@ $('refresh').onclick=async()=>{
     navLink('🚗 Naar laadpaal',$('origin').value.trim(),chargerCoords,'driving');
     navLink('🚶 Naar bestemming',chargerCoords,$('destination').value.trim(),'walking');
     el.appendChild(links);
+    const check=document.createElement('a');check.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([x.p.adres,x.p.plaats,'laadpaal'].filter(Boolean).join(' '));check.target='_blank';check.rel='noopener noreferrer';check.textContent='🔎 Locatie vergelijken in Google Maps';el.appendChild(check);
+    const reports=document.createElement('details');reports.className='info';
+    const reportSummary=document.createElement('summary');reportSummary.textContent='📝 Mijn controle ter plaatse';reports.appendChild(reportSummary);
+    addText(reports,'p','Deze melding wordt alleen op dit apparaat opgeslagen en is niet onafhankelijk geverifieerd.','muted');
+    const reportActions=document.createElement('div');reportActions.className='actions';
+    for(const [kind,label] of [['works','✅ Werkt'],['broken','🔧 Defect'],['missing','❌ Niet gevonden'],['clear','↩ Wis melding']]){
+      const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=label;
+      b.onclick=()=>{saveReport(x,kind);const trust=reliability(x);reportSummary.textContent='📝 Mijn controle ter plaatse — '+(kind==='clear'?'melding gewist':'opgeslagen');chargeMessage('Waarneming opgeslagen. Klik op Zoek laadpalen om de aanbevelingen opnieuw te beoordelen.',true)};
+      reportActions.appendChild(b);
+    }
+    reports.appendChild(reportActions);el.appendChild(reports);
     const details=document.createElement('details');details.className='info';
     const summary=document.createElement('summary');summary.textContent='ℹ️ Meer info over laadpaal';details.appendChild(summary);
     addText(details,'p','Status: '+(statuses||'onbekend')+' · laatst bijgewerkt: '+latest,'muted');
@@ -327,7 +363,7 @@ $('refresh').onclick=async()=>{
     tech.appendChild(diagnostic);details.appendChild(tech);el.appendChild(details);
    $('chargers').appendChild(el);
   }
-  chargeMessage(displayed.length+' laadlocaties getoond, gerangschikt op NDW-kosten en daarna loopafstand. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'Prijzen indicatief; controleer beschikbaarheid bij vertrek. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
+  chargeMessage(displayed.length+' laadlocaties getoond, eerst op statusbetrouwbaarheid, daarna NDW-kosten en loopafstand. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'Prijzen indicatief; controleer beschikbaarheid bij vertrek. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
  }catch(e){chargeMessage('Zoeken mislukt: '+(e.message||String(e)))}finally{btn.disabled=false}
 };
 $('routeBtn').onclick=async()=>{
