@@ -193,7 +193,7 @@ def schrijf_testbestand():
         "laadpalen": []
     }
 
-       for locatie in locaties[:5]:
+for locatie in locaties[:5]:
         aansluitingen = []
 
         for evse in locatie.get("evses") or []:
