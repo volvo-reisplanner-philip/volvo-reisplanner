@@ -1,9 +1,8 @@
-"""Maak een compacte Nederlandse Type 2-laadlocatiecatalogus uit NDW OCPI.
+"""Maak compacte NDW Type 2-catalogus voor Volvo Reisplanner.
 
-Let op: NDW CPO-tarieven zijn geen gegarandeerde Shuttel-eindprijzen.
-De status is een momentopname; parkeerbelasting en betaling worden niet geregeld.
+NDW-tarieven zijn niet noodzakelijk Shuttel-eindprijzen. Status kan verouderd
+zijn. Gemeentelijke parkeerkosten en betalingen worden niet afgehandeld.
 """
-
 import gzip
 import json
 import urllib.request
@@ -13,6 +12,7 @@ from pathlib import Path
 LOCATIES_URL = "https://opendata.ndw.nu/charging_point_locations_ocpi.json.gz"
 TARIEVEN_URL = "https://opendata.ndw.nu/charging_point_tariffs_ocpi.json.gz"
 UITVOER = Path("data/laadprijzen.json")
+MAX_BYTES = 95_000_000  # Ruim onder GitHub's limiet van 100 MB.
 
 
 def download_ndw(url):
@@ -21,8 +21,25 @@ def download_ndw(url):
         return json.loads(gzip.decompress(response.read()).decode("utf-8"))
 
 
-def tekst(value):
-    return str(value) if value is not None else ""
+def tekst(waarde):
+    return str(waarde) if waarde is not None else ""
+
+
+def prijsopbouw_compact(elementen):
+    """Behoud prijscomponenten en alle niet-lege beperkingen."""
+    uitvoer = []
+    for element in elementen or []:
+        componenten = [
+            {"type": c.get("type"), "prijs": c.get("price"),
+             "btw": c.get("vat"), "stap": c.get("step_size")}
+            for c in element.get("price_components") or []
+        ]
+        if not componenten:
+            continue
+        voorwaarden = {k: v for k, v in (element.get("restrictions") or {}).items()
+                       if v is not None}
+        uitvoer.append({"componenten": componenten, "voorwaarden": voorwaarden})
+    return uitvoer
 
 
 def main():
@@ -30,85 +47,88 @@ def main():
     locaties = download_ndw(LOCATIES_URL)
     print("NDW-laadtarieven downloaden...")
     tarieven = download_ndw(TARIEVEN_URL)
-    print(f"Ontvangen: {len(locaties)} locaties, {len(tarieven)} tarieven")
+    print(f"Ontvangen: {len(locaties)} locaties en {len(tarieven)} tarieven")
 
-    # Unieke koppeling op land, aanbieder en tarief-ID. Dubbele sleutels
-    # worden niet geraden: ze blijven als onduidelijk gemarkeerd.
-    tarief_index = {}
+    # Tarieven slechts één keer opslaan, niet opnieuw bij iedere laadpaal.
+    index = {}
     for tarief in tarieven:
-        key = (tekst(tarief.get("country_code")), tekst(tarief.get("party_id")), tekst(tarief.get("id")))
-        tarief_index.setdefault(key, []).append(tarief)
+        sleutel = (tekst(tarief.get("country_code")),
+                  tekst(tarief.get("party_id")), tekst(tarief.get("id")))
+        index.setdefault(sleutel, []).append(tarief)
+
+    gebruikte_tarieven = {}
+    laadpalen = []
+    aansluitingen_totaal = 0
+    onduidelijk = 0
+
+    for locatie in locaties:
+        if locatie.get("country_code") != "NL":
+            continue
+        aanbieder = tekst(locatie.get("party_id"))
+        aansluitingen = []
+        for evse in locatie.get("evses") or []:
+            for connector in evse.get("connectors") or []:
+                if connector.get("standard") != "IEC_62196_T2":
+                    continue
+                refs = []
+                onbekend = []
+                for tarief_id in connector.get("tariff_ids") or []:
+                    sleutel = ("NL", aanbieder, tekst(tarief_id))
+                    kandidaten = index.get(sleutel, [])
+                    if len(kandidaten) != 1:
+                        onbekend.append(tekst(tarief_id))
+                        onduidelijk += 1
+                        continue
+                    ref = "|".join(sleutel)
+                    if ref not in gebruikte_tarieven:
+                        tarief = kandidaten[0]
+                        gebruikte_tarieven[ref] = {
+                            "valuta": tarief.get("currency"),
+                            "prijsopbouw": prijsopbouw_compact(tarief.get("elements")),
+                            "geldig_vanaf": tarief.get("start_date_time"),
+                            "geldig_tot": tarief.get("end_date_time"),
+                        }
+                    refs.append(ref)
+                aansluitingen.append({
+                    "id": evse.get("evse_id"),
+                    "status": evse.get("status"),
+                    "bijgewerkt": evse.get("last_updated"),
+                    "tarieven": refs,
+                    "onbekende_tarieven": onbekend,
+                })
+                aansluitingen_totaal += 1
+        if aansluitingen:
+            coord = locatie.get("coordinates") or {}
+            laadpalen.append({
+                "id": locatie.get("id"),
+                "naam": locatie.get("name"),
+                "plaats": locatie.get("city"),
+                "adres": locatie.get("address"),
+                "lat": coord.get("latitude"),
+                "lon": coord.get("longitude"),
+                "aansluitingen": aansluitingen,
+            })
 
     resultaat = {
         "bijgewerkt": datetime.now(timezone.utc).isoformat(),
         "bron": "NDW Open Data (OCPI)",
         "testbestand": False,
-        "opmerking": (
-            "NDW-tarieven zijn niet noodzakelijk Shuttel-eindprijzen. "
-            "Beschikbaarheid is niet gegarandeerd actueel. "
-            "Gemeentelijke parkeerkosten en directe betaling worden niet aangeboden."
-        ),
-        "laadpalen": [],
+        "opmerking": "NDW-prijzen zijn geen gegarandeerde Shuttel-prijzen; status kan verouderd zijn; gemeentelijke parkeerkosten en betalingen ontbreken.",
+        "tarieven": gebruikte_tarieven,
+        "laadpalen": laadpalen,
     }
-    onduidelijke_koppelingen = 0
-    aansluitingen_totaal = 0
-
-    for locatie in locaties:
-        if locatie.get("country_code") != "NL":
-            continue
-        land = tekst(locatie.get("country_code"))
-        aanbieder = tekst(locatie.get("party_id"))
-        aansluitingen = []
-
-        for evse in locatie.get("evses") or []:
-            for connector in evse.get("connectors") or []:
-                if connector.get("standard") != "IEC_62196_T2":
-                    continue
-
-                gekoppelde_tarieven = []
-                onduidelijke_tarief_ids = []
-                for tarief_id in connector.get("tariff_ids") or []:
-                    kandidaten = tarief_index.get((land, aanbieder, tekst(tarief_id)), [])
-                    if len(kandidaten) == 1:
-                        tarief = kandidaten[0]
-                        gekoppelde_tarieven.append({
-                            "id": tarief.get("id"),
-                            "aanbieder": tarief.get("party_id"),
-                            "landcode": tarief.get("country_code"),
-                            "valuta": tarief.get("currency"),
-                            "prijsopbouw": tarief.get("elements") or [],
-                        })
-                    else:
-                        onduidelijke_tarief_ids.append(tekst(tarief_id))
-                        onduidelijke_koppelingen += 1
-
-                aansluitingen.append({
-                    "evse_id": evse.get("evse_id"),
-                    "status": evse.get("status"),
-                    "status_bijgewerkt": evse.get("last_updated"),
-                    "type": connector.get("standard"),
-                    "tarief_ids": connector.get("tariff_ids") or [],
-                    "tarieven": gekoppelde_tarieven,
-                    "onduidelijke_tarief_ids": onduidelijke_tarief_ids,
-                })
-                aansluitingen_totaal += 1
-
-        if aansluitingen:
-            resultaat["laadpalen"].append({
-                "id": locatie.get("id"),
-                "naam": locatie.get("name"),
-                "plaats": locatie.get("city"),
-                "adres": locatie.get("address"),
-                "coordinaten": locatie.get("coordinates"),
-                "aansluitingen": aansluitingen,
-            })
-
     UITVOER.parent.mkdir(parents=True, exist_ok=True)
-    UITVOER.write_text(json.dumps(resultaat, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    print(f"Opgeslagen: {len(resultaat['laadpalen'])} Nederlandse Type 2-locaties")
+    inhoud = json.dumps(resultaat, ensure_ascii=False, separators=(",", ":"))
+    grootte = len(inhoud.encode("utf-8"))
+    print(f"Nederlandse Type 2-locaties: {len(laadpalen)}")
     print(f"Type 2-aansluitingen: {aansluitingen_totaal}")
-    print(f"Niet eenduidig gekoppelde tariefverwijzingen: {onduidelijke_koppelingen}")
-    print(f"Bestand: {UITVOER} ({UITVOER.stat().st_size / 1024 / 1024:.1f} MiB)")
+    print(f"Unieke gebruikte tarieven: {len(gebruikte_tarieven)}")
+    print(f"Onduidelijke tariefverwijzingen: {onduidelijk}")
+    print(f"Uitvoer: {grootte / 1_000_000:.2f} MB")
+    if grootte >= MAX_BYTES:
+        raise RuntimeError("Catalogus is nog te groot voor GitHub. Geen bestand geschreven; opsplitsen is nodig.")
+    UITVOER.write_text(inhoud, encoding="utf-8")
+    print(f"Opgeslagen: {UITVOER}")
 
 
 if __name__ == "__main__":
