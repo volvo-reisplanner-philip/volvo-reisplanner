@@ -48,6 +48,23 @@ def main():
             tarieven_met_startkosten += 1
 
     print("Tarieven met vaste kosten:", tarieven_met_startkosten)
+    tarieven_met_positieve_startkosten = 0
+
+    for tarief in tarieven:
+        heeft_positieve_startkosten = any(
+            onderdeel.get("type") == "FLAT"
+            and float(onderdeel.get("price") or 0) > 0
+            for element in tarief.get("elements", [])
+            for onderdeel in element.get("price_components", [])
+        )
+
+        if heeft_positieve_startkosten:
+            tarieven_met_positieve_startkosten += 1
+
+    print(
+        "Tarieven met positieve startkosten:",
+        tarieven_met_positieve_startkosten
+    )
     for soort, aantal in soorten.most_common():
         print(f"{soort}: {aantal}")
     if locaties:
