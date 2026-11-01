@@ -131,21 +131,23 @@ async function initMaps(){
  status('Google Maps wordt geladen…');$('mapsStatus').textContent='Google Maps wordt geladen…';
  try{
   await loadMaps();
-  const {PlaceAutocompleteElement}=await google.maps.importLibrary('places');
-  if(!PlaceAutocompleteElement)throw Error('Places API (New) is niet beschikbaar.');
+  const {Autocomplete}=await google.maps.importLibrary('places');
+  if(!Autocomplete)throw Error('Places Autocomplete is niet beschikbaar. Controleer of Places API is ingeschakeld.');
   const {Route}=await google.maps.importLibrary('routes');routeClass=Route;mapsReady=true;
-  for(const w of widgets)w.remove();widgets=[];
+  for(const w of widgets){try{google.maps.event.clearInstanceListeners(w)}catch(e){}}
+  widgets=[];
   for(const id of ['origin','destination']){
-   const original=$(id),widget=new PlaceAutocompleteElement();
-   widget.setAttribute('placeholder',id==='origin'?'Zoek vertrekadres via Google Maps':'Zoek bestemming via Google Maps');
-   widget.setAttribute('aria-label',id==='origin'?'Vertrekadres':'Bestemming');
-   widget.value=original.value;original.insertAdjacentElement('afterend',widget);original.classList.add('hidden');
-   widget.addEventListener('gmp-select',async event=>{
-    try{const place=event.placePrediction.toPlace();await place.fetchFields({fields:['formattedAddress','displayName']});
-     original.value=place.formattedAddress||place.displayName||'';calc();
-     status((id==='origin'?'Vertrekadres':'Bestemming')+' geselecteerd.',true);
-    }catch(e){status('Adres selecteren mislukt: '+e.message)}
-   });widgets.push(widget);
+   const input=$(id);
+   input.classList.remove('hidden');
+   const autocomplete=new Autocomplete(input,{fields:['formatted_address','name'],componentRestrictions:{country:'nl'}});
+   autocomplete.addListener('place_changed',()=>{
+    const place=autocomplete.getPlace();
+    if(place?.formatted_address||place?.name){
+     input.value=place.formatted_address||place.name;
+     calc();status((id==='origin'?'Vertrekadres':'Bestemming')+' geselecteerd.',true);
+    }
+   });
+   widgets.push(autocomplete);
   }
   $('apiKey').value='';$('mapsStatus').textContent='Google Maps verbonden. Adressuggesties actief.';
   status('Google Maps verbonden.',true);
@@ -306,7 +308,7 @@ $('save').onclick=()=>{
  const b=getBook();b.push({name:name.trim()||d,destination:d});
  try{localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender();$('book').value=String(b.length-1)}catch(e){alert('Opslaan niet mogelijk.')}
 };
-$('book').onchange=()=>{const i=$('book').value;if(i==='')return;const x=getBook()[Number(i)];if(x){$('destination').value=x.destination;if(widgets[1])widgets[1].value=x.destination;calc()}};
+$('book').onchange=()=>{const i=$('book').value;if(i==='')return;const x=getBook()[Number(i)];if(x){$('destination').value=x.destination;calc()}};
 $('remove').onclick=()=>{const i=$('book').value;if(i===''||!confirm('Bestemming verwijderen?'))return;const b=getBook();b.splice(Number(i),1);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender()};
 $('print').onclick=()=>window.print();
 $('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');location.reload()};
