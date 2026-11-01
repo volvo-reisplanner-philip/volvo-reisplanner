@@ -23,7 +23,14 @@ def main():
     print("Download geslaagd!")
     print("Type locatiegegevens:", type(locaties).__name__)
     print("Type tariefgegevens:", type(tarieven).__name__)
+    print("Aantal locaties:", len(locaties))
+    print("Aantal tarieven:", len(tarieven))
 
+    if locaties:
+        print("Velden eerste locatie:", list(locaties[0].keys()))
+
+    if tarieven:
+        print("Velden eerste tarief:", list(tarieven[0].keys()))
 
 if __name__ == "__main__":
     main()
