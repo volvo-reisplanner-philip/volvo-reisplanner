@@ -31,6 +31,17 @@ def main():
 
     if tarieven:
         print("Velden eerste tarief:", list(tarieven[0].keys()))
+    gezochte_tarief_id = "558604132"
+
+    gevonden_tarief = next(
+        (t for t in tarieven if str(t.get("id")) == gezochte_tarief_id),
+        None
+    )
+
+    if gevonden_tarief:
+        print("Gevonden tarief:", gevonden_tarief)
+    else:
+        print("Tarief-ID niet gevonden:", gezochte_tarief_id)
     if locaties:
         eerste_locatie = locaties[0]
         print("Eerste locatie-ID:", eerste_locatie.get("id"))
