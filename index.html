@@ -311,7 +311,7 @@ $('remove').onclick=()=>{const i=$('book').value;if(i===''||!confirm('Bestemming
 $('print').onclick=()=>window.print();
 $('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');location.reload()};
 for(const id of fields)$(id).addEventListener('input',calc);
-try{const saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(const id of fields)if(saved[id]!==undefined)$(id).value=saved[id]}catch(e){}
+try{const saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(const id of fields)if(saved[id]!==undefined){if(id==='origin' && ['Beekbergen, Nederland','Beekbergen'].includes(String(saved[id]).trim()))continue;$(id).value=saved[id]}}catch(e){}
 bookRender();updateManualCapacity();checkRangeWarning();calc();
 try{if(localStorage.getItem(mapsKeyName))initMaps()}catch(e){}
 })();
