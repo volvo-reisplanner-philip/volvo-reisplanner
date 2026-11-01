@@ -1,5 +1,5 @@
 {
-  "bijgewerkt": "2026-11-01T06:01:28.627915+00:00",
+  "bijgewerkt": "2026-11-01T06:12:55.810874+00:00",
   "bron": "NDW Open Data",
   "laadpalen": [
     {
@@ -10,7 +10,41 @@
       "coordinaten": {
         "latitude": "51.9289740",
         "longitude": "4.4108340"
-      }
+      },
+      "aansluitingen": [
+        {
+          "evse_id": "NLLMSE1805416*1",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "558604132"
+          ]
+        },
+        {
+          "evse_id": "NLLMSE1000093229*2",
+          "status": "CHARGING",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "574204104"
+          ]
+        },
+        {
+          "evse_id": "NLLMSE1805416*2",
+          "status": "CHARGING",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "558604132"
+          ]
+        },
+        {
+          "evse_id": "NLLMSE1000093229*1",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "574204104"
+          ]
+        }
+      ]
     },
     {
       "id": "9a109ccb-cc1d-4dbd-97b1-09de486dfdc2",
@@ -20,7 +54,25 @@
       "coordinaten": {
         "latitude": "51.689449",
         "longitude": "5.068779"
-      }
+      },
+      "aansluitingen": [
+        {
+          "evse_id": "NL*NUO*EALF*0016319*1",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "2000025394-2000011292"
+          ]
+        },
+        {
+          "evse_id": "NL*NUO*EALF*0016319*2",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "2000025394-2000011292"
+          ]
+        }
+      ]
     },
     {
       "id": "NLLOC002560",
@@ -30,7 +82,25 @@
       "coordinaten": {
         "latitude": "51.5561070",
         "longitude": "5.0798660"
-      }
+      },
+      "aansluitingen": [
+        {
+          "evse_id": "NLALLEGO0028911",
+          "status": "CHARGING",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "01a11228-4846-724b-ac35-f2be076e6f0f"
+          ]
+        },
+        {
+          "evse_id": "NLALLEGO0028912",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "01a11228-4846-724b-ac35-f2be076e6f0f"
+          ]
+        }
+      ]
     },
     {
       "id": "a34d4a48-0dac-4075-8219-6b3b8d75c06e",
@@ -40,7 +110,25 @@
       "coordinaten": {
         "latitude": "52.145420",
         "longitude": "4.767997"
-      }
+      },
+      "aansluitingen": [
+        {
+          "evse_id": "NLQWCE2724P11",
+          "status": "CHARGING",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "442"
+          ]
+        },
+        {
+          "evse_id": "NLQWCE2724P12",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "442"
+          ]
+        }
+      ]
     },
     {
       "id": "89258262",
@@ -50,7 +138,25 @@
       "coordinaten": {
         "latitude": "51.8618910",
         "longitude": "4.6209950"
-      }
+      },
+      "aansluitingen": [
+        {
+          "evse_id": "NLLMSE1806940*1",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "558604132"
+          ]
+        },
+        {
+          "evse_id": "NLLMSE1806940*2",
+          "status": "AVAILABLE",
+          "type": "IEC_62196_T2",
+          "tarief_ids": [
+            "558604132"
+          ]
+        }
+      ]
     }
   ]
 }
