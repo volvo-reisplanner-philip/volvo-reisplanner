@@ -77,6 +77,22 @@ def main():
     print("Voorbeelden parkeertijdtarieven:")
     for voorbeeld in voorbeelden_parkeerkosten:
         print(voorbeeld)
+    from collections import Counter
+
+    parkeerprijzen = Counter()
+
+    for tarief in tarieven:
+        for element in tarief.get("elements", []):
+            for onderdeel in element.get("price_components", []):
+                if onderdeel.get("type") == "PARKING_TIME":
+                    prijs = float(onderdeel.get("price") or 0)
+                    if prijs > 0:
+                        parkeerprijzen[prijs] += 1
+
+    print("Meest voorkomende positieve parkeertijdtarieven:")
+
+    for prijs, aantal in parkeerprijzen.most_common(10):
+        print(f"EUR {prijs:.2f}: {aantal} keer")    
     print("Overzicht prijscomponenten:")
     tarieven_met_startkosten = 0
 
