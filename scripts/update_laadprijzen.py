@@ -35,6 +35,19 @@ def main():
                 soorten[onderdeel.get("type", "ONBEKEND")] += 1
 
     print("Overzicht prijscomponenten:")
+    tarieven_met_startkosten = 0
+
+    for tarief in tarieven:
+        heeft_startkosten = any(
+            onderdeel.get("type") == "FLAT"
+            for element in tarief.get("elements", [])
+            for onderdeel in element.get("price_components", [])
+        )
+
+        if heeft_startkosten:
+            tarieven_met_startkosten += 1
+
+    print("Tarieven met vaste kosten:", tarieven_met_startkosten)
     for soort, aantal in soorten.most_common():
         print(f"{soort}: {aantal}")
     if locaties:
