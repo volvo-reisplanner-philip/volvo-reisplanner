@@ -50,6 +50,29 @@ def main():
         "Tarieven met positieve parkeertijdkosten:",
         tarieven_met_parkeerkosten
     )
+    voorbeelden_parkeerkosten = []
+
+    for tarief in tarieven:
+        for element in tarief.get("elements", []):
+            for onderdeel in element.get("price_components", []):
+                if (
+                    onderdeel.get("type") == "PARKING_TIME"
+                    and float(onderdeel.get("price") or 0) > 0
+                ):
+                    voorbeelden_parkeerkosten.append({
+                        "tarief_id": tarief.get("id"),
+                        "prijs": onderdeel.get("price"),
+                        "stapgrootte": onderdeel.get("step_size"),
+                        "voorwaarden": element.get("restrictions")
+                    })
+                    break
+
+        if len(voorbeelden_parkeerkosten) >= 5:
+            break
+
+    print("Voorbeelden parkeertijdtarieven:")
+    for voorbeeld in voorbeelden_parkeerkosten:
+        print(voorbeeld)
     print("Overzicht prijscomponenten:")
     tarieven_met_startkosten = 0
 
