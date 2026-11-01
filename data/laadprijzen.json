@@ -1,6 +1,8 @@
 {
-  "bijgewerkt": "2026-11-01T06:12:55.810874+00:00",
-  "bron": "NDW Open Data",
+  "bijgewerkt": "2026-11-01T06:23:47.857004+00:00",
+  "bron": "NDW Open Data (OCPI)",
+  "testbestand": true,
+  "opmerking": "NDW-tarieven zijn niet noodzakelijk de uiteindelijke Shuttel-prijzen. Statusgegevens kunnen verouderd zijn; parkeerkosten zijn niet berekend.",
   "laadpalen": [
     {
       "id": "89035440",
@@ -15,34 +17,126 @@
         {
           "evse_id": "NLLMSE1805416*1",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-10-27T15:57:23Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "558604132"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "558604132",
+              "aanbieder": "LMS",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.37,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": null
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         },
         {
           "evse_id": "NLLMSE1000093229*2",
           "status": "CHARGING",
+          "status_bijgewerkt": "2026-10-28T06:28:39Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "574204104"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "574204104",
+              "aanbieder": "LMS",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.39,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": null
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         },
         {
           "evse_id": "NLLMSE1805416*2",
           "status": "CHARGING",
+          "status_bijgewerkt": "2026-10-28T06:18:55Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "558604132"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "558604132",
+              "aanbieder": "LMS",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.37,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": null
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         },
         {
           "evse_id": "NLLMSE1000093229*1",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-10-22T14:56:12Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "574204104"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "574204104",
+              "aanbieder": "LMS",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.39,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": null
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         }
       ]
     },
@@ -59,18 +153,94 @@
         {
           "evse_id": "NL*NUO*EALF*0016319*1",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-10-31T18:47:33Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "2000025394-2000011292"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "2000025394-2000011292",
+              "aanbieder": "NUO",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.2691,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": null,
+                    "end_time": null,
+                    "start_date": "2026-01-01",
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": null,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         },
         {
           "evse_id": "NL*NUO*EALF*0016319*2",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-10-31T20:01:40Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "2000025394-2000011292"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "2000025394-2000011292",
+              "aanbieder": "NUO",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.2691,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": null,
+                    "end_time": null,
+                    "start_date": "2026-01-01",
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": null,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         }
       ]
     },
@@ -87,18 +257,250 @@
         {
           "evse_id": "NLALLEGO0028911",
           "status": "CHARGING",
+          "status_bijgewerkt": "2026-11-01T02:31:04Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "01a11228-4846-724b-ac35-f2be076e6f0f"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "01a11228-4846-724b-ac35-f2be076e6f0f",
+              "aanbieder": "ALL",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "TIME",
+                      "price": 0.0,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": null,
+                    "end_time": null,
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": 0,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                },
+                {
+                  "price_components": [
+                    {
+                      "type": "TIME",
+                      "price": 2.4793,
+                      "vat": 21.0,
+                      "step_size": 60
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": "07:00",
+                    "end_time": "23:00",
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": 18000,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                },
+                {
+                  "price_components": [
+                    {
+                      "type": "TIME",
+                      "price": 0.0,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": "07:00",
+                    "end_time": "23:00",
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": 75600,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                },
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.511,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": "07:00",
+                    "end_time": "23:00",
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": null,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         },
         {
           "evse_id": "NLALLEGO0028912",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-10-31T11:22:26Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "01a11228-4846-724b-ac35-f2be076e6f0f"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "01a11228-4846-724b-ac35-f2be076e6f0f",
+              "aanbieder": "ALL",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "TIME",
+                      "price": 0.0,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": null,
+                    "end_time": null,
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": 0,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                },
+                {
+                  "price_components": [
+                    {
+                      "type": "TIME",
+                      "price": 2.4793,
+                      "vat": 21.0,
+                      "step_size": 60
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": "07:00",
+                    "end_time": "23:00",
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": 18000,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                },
+                {
+                  "price_components": [
+                    {
+                      "type": "TIME",
+                      "price": 0.0,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": "07:00",
+                    "end_time": "23:00",
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": 75600,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                },
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.511,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": "07:00",
+                    "end_time": "23:00",
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": null,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         }
       ]
     },
@@ -115,18 +517,118 @@
         {
           "evse_id": "NLQWCE2724P11",
           "status": "CHARGING",
+          "status_bijgewerkt": "2026-11-01T04:08:07Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "442"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "442",
+              "aanbieder": "QWC",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "PARKING_TIME",
+                      "price": 0.25,
+                      "vat": 0.0,
+                      "step_size": 1
+                    },
+                    {
+                      "type": "TIME",
+                      "price": 0.25,
+                      "vat": 0.0,
+                      "step_size": 1
+                    },
+                    {
+                      "type": "ENERGY",
+                      "price": 0.55,
+                      "vat": 0.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": null,
+                    "end_time": null,
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": null,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         },
         {
           "evse_id": "NLQWCE2724P12",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-11-01T04:08:07Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "442"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "442",
+              "aanbieder": "QWC",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "PARKING_TIME",
+                      "price": 0.25,
+                      "vat": 0.0,
+                      "step_size": 1
+                    },
+                    {
+                      "type": "TIME",
+                      "price": 0.25,
+                      "vat": 0.0,
+                      "step_size": 1
+                    },
+                    {
+                      "type": "ENERGY",
+                      "price": 0.55,
+                      "vat": 0.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": {
+                    "start_time": null,
+                    "end_time": null,
+                    "start_date": null,
+                    "end_date": null,
+                    "min_kwh": null,
+                    "max_kwh": null,
+                    "min_current": null,
+                    "max_current": null,
+                    "min_power": null,
+                    "max_power": null,
+                    "min_duration": null,
+                    "max_duration": null,
+                    "day_of_week": null,
+                    "reservation": null
+                  }
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         }
       ]
     },
@@ -143,18 +645,64 @@
         {
           "evse_id": "NLLMSE1806940*1",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-10-28T10:54:49Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "558604132"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "558604132",
+              "aanbieder": "LMS",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.37,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": null
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         },
         {
           "evse_id": "NLLMSE1806940*2",
           "status": "AVAILABLE",
+          "status_bijgewerkt": "2026-10-28T05:18:19Z",
           "type": "IEC_62196_T2",
           "tarief_ids": [
             "558604132"
-          ]
+          ],
+          "tarieven": [
+            {
+              "id": "558604132",
+              "aanbieder": "LMS",
+              "landcode": "NL",
+              "valuta": "EUR",
+              "prijsopbouw": [
+                {
+                  "price_components": [
+                    {
+                      "type": "ENERGY",
+                      "price": 0.37,
+                      "vat": 21.0,
+                      "step_size": 1
+                    }
+                  ],
+                  "restrictions": null
+                }
+              ]
+            }
+          ],
+          "onduidelijke_tarief_ids": []
         }
       ]
     }
