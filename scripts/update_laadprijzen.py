@@ -69,7 +69,11 @@ def main():
 
         if len(voorbeelden_parkeerkosten) >= 5:
             break
-
+    for tarief in tarieven:
+        if tarief.get("id") == "508b9eea-b4e8-4bc1-b76f-e50a0d25e921":
+            print("Valuta parkeertarief:", tarief.get("currency"))
+            print("Volledige tariefopbouw:", tarief.get("elements"))
+            break
     print("Voorbeelden parkeertijdtarieven:")
     for voorbeeld in voorbeelden_parkeerkosten:
         print(voorbeeld)
