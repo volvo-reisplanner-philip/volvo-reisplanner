@@ -13,7 +13,7 @@ header p{margin:6px 0 0;color:#c8d8e2}main{padding:16px 12px 40px}
 h2{font-size:1.07rem;margin:0 0 14px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .wide{grid-column:1/-1}label{font-size:.85rem;font-weight:650;display:block;margin-bottom:5px}
-gmp-place-autocomplete{display:block;width:100%}
+gmp-place-autocomplete{display:block;width:100%}.maps-search{margin-top:7px}.maps-search .muted{display:block;margin-bottom:5px}
 input,select{width:100%;min-width:0;padding:12px;border:1px solid #b6c9d3;border-radius:9px;font:inherit;background:white}
 button{font:inherit;background:#164761;color:white;border:0;border-radius:9px;padding:11px 14px;cursor:pointer;font-weight:650}
 button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;color:#183247}
@@ -131,23 +131,33 @@ async function initMaps(){
  status('Google Maps wordt geladen…');$('mapsStatus').textContent='Google Maps wordt geladen…';
  try{
   await loadMaps();
-  const {Autocomplete}=await google.maps.importLibrary('places');
-  if(!Autocomplete)throw Error('Places Autocomplete is niet beschikbaar. Controleer of Places API is ingeschakeld.');
+  const {PlaceAutocompleteElement}=await google.maps.importLibrary('places');
+  if(!PlaceAutocompleteElement)throw Error('Places API (New) is niet beschikbaar.');
   const {Route}=await google.maps.importLibrary('routes');routeClass=Route;mapsReady=true;
-  for(const w of widgets){try{google.maps.event.clearInstanceListeners(w)}catch(e){}}
+  for(const w of widgets){try{w.remove()}catch(e){}}
   widgets=[];
   for(const id of ['origin','destination']){
-   const input=$(id);
-   input.classList.remove('hidden');
-   const autocomplete=new Autocomplete(input,{fields:['formatted_address','name'],componentRestrictions:{country:'nl'}});
-   autocomplete.addListener('place_changed',()=>{
-    const place=autocomplete.getPlace();
-    if(place?.formatted_address||place?.name){
-     input.value=place.formatted_address||place.name;
-     calc();status((id==='origin'?'Vertrekadres':'Bestemming')+' geselecteerd.',true);
-    }
+   const input=$(id);input.classList.remove('hidden');
+   const existing=document.getElementById(id+'SearchBox');if(existing)existing.remove();
+   const search=document.createElement('div');search.id=id+'SearchBox';search.className='maps-search';
+   const label=document.createElement('span');label.className='muted';
+   label.textContent='🔎 Zoek een adres via Google Maps (selecteer een suggestie):';
+   const widget=new PlaceAutocompleteElement();
+   widget.setAttribute('placeholder','🔎 Zoek '+(id==='origin'?'vertrekadres':'bestemming')+' via Google Maps');
+   search.append(label,widget);input.insertAdjacentElement('afterend',search);
+   widget.addEventListener('gmp-select',async event=>{
+    try{
+     const prediction=event.placePrediction;
+     if(!prediction)throw Error('Geen adres geselecteerd.');
+     const place=prediction.toPlace();
+     await place.fetchFields({fields:['formattedAddress','displayName']});
+     const address=place.formattedAddress||place.displayName;
+     if(!address)throw Error('Geen adresgegevens ontvangen.');
+     input.value=address;calc();
+     status((id==='origin'?'Vertrekadres':'Bestemming')+' geselecteerd.',true);
+    }catch(e){status('Adres selecteren mislukt: '+e.message)}
    });
-   widgets.push(autocomplete);
+   widgets.push(search);
   }
   $('apiKey').value='';$('mapsStatus').textContent='Google Maps verbonden. Adressuggesties actief.';
   status('Google Maps verbonden.',true);
