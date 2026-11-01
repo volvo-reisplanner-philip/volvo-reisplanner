@@ -80,8 +80,8 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 </section>
 </div><div class="view" data-view="laden" hidden><section class="card"><h2>Laadpalen bij bestemming</h2>
 <div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="number" min="0.1" max="200" step="0.5" value="10"></div></div><details class="info"><summary>⚙️ Laadduur, btw en bijkomende kosten</summary><div class="grid"><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="number" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale parkeertijd (minuten)</label><input id="parkingMinutes" type="number" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="number" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="number" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten (€)</label><input id="parkingFee" type="number" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur.</p></details>
-<div class="actions"><button id="refresh">🔄 Controleer laadpalen opnieuw</button></div>
-<div id="dataFreshness" class="status" role="status">Nog niet gecontroleerd. De controle haalt de nieuwste beschikbare GitHub/NDW-momentopname op, geen live exploitantstatus.</div>
+<div class="actions"><button id="refresh">🔄 Actuele beschikbaarheid</button></div>
+<div id="dataFreshness" class="status" role="status">Nog niet gecontroleerd. Rechtstreekse NDW-status wordt geprobeerd; bij een verbindingsfout verschijnt een waarschuwing.</div>
 <p class="muted">Voor vertrek: controle op NDW-status, ouderdom en je eigen meldingen. Fysieke aanwezigheid kan niet automatisch worden bevestigd.</p>
 <div id="chargeStatus" class="status" role="status">Verbind Google Maps in onderdeel 5 en zoek laadpalen.</div>
 <div id="chargers"></div>
@@ -266,6 +266,33 @@ async function nearbyNdw(dest){
  }
  return {points:[...points.values()],updated:index.bijgewerkt};
 }
+// Rechtstreekse NDW GeoJSON-status; deze interface geeft aantallen vrij/totaal per laadlocatie.
+// De browser kan de verbinding blokkeren (CORS). Dan gebruiken we alleen de oude
+// momentopname, met een expliciete waarschuwing en NOOIT een groene live-indicatie.
+const liveNdwEndpoint='https://dotnl.ndw.nu/api/rest/geojson/dynamic-road-status/charge-point-data/v1/features';
+async function directNdw(dest){
+ const latRadius=0.009,lonRadius=0.016;
+ const bbox=[dest.lng-lonRadius,dest.lat-latRadius,dest.lng+lonRadius,dest.lat+latRadius].map(v=>v.toFixed(6)).join(',');
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+ try{
+  const r=await fetch(liveNdwEndpoint+'?bbox='+encodeURIComponent(bbox),{cache:'no-store',signal:controller.signal});
+  if(!r.ok)throw Error('NDW HTTP '+r.status);
+  const data=await r.json();
+  if(data.type!=='FeatureCollection'||!Array.isArray(data.features))throw Error('Onverwacht NDW-antwoord');
+  return data.features.filter(f=>f?.geometry?.type==='Point'&&Array.isArray(f.geometry.coordinates)&&Array.isArray(f.properties?.availabilities));
+ }finally{clearTimeout(timer)}
+}
+function directAvailability(feature){
+ const ac=feature.properties.availabilities.filter(a=>a.connector_type==='IEC_62196_T2'&&String(a.power_type||'').startsWith('AC'));
+ return {free:ac.reduce((n,a)=>n+Math.max(0,Number(a.available)||0),0),total:ac.reduce((n,a)=>n+Math.max(0,Number(a.total)||0),0),updated:feature.properties.last_updated};
+}
+function matchDirect(x,features){
+ let closest=null,distance=Infinity;
+ for(const f of features){const [lng,lat]=f.geometry.coordinates;if(!Number.isFinite(lat)||!Number.isFinite(lng))continue;
+  const d=haversine(x.coords,{lat,lng});if(d<distance){distance=d;closest=f}}
+ // Matching op locatie, niet op adres: >30 meter is te onzeker om de status toe te kennen.
+ return distance<=30?closest:null;
+}
 function addText(parent,tag,value,className){const e=document.createElement(tag);if(className)e.className=className;e.textContent=value;parent.appendChild(e);return e}
 // Eigen waarnemingen blijven lokaal op dit apparaat; ze zijn geen officiële storingsmeldingen.
 const reportStorage='volvo-laadpaal-waarnemingen-v1';
@@ -312,12 +339,30 @@ $('refresh').onclick=async()=>{
  const btn=$('refresh');btn.disabled=true;$('chargers').replaceChildren();chargeMessage('NDW-laadpalen en loopafstanden controleren…');
  try{
   const kwh=Number($('chargeKwh').value);if(!Number.isFinite(kwh)||kwh<=0||kwh>200)throw Error('Vul 0,1 tot 200 kWh in.');
-  const dest=await destinationCoords(),{points,updated}=await nearbyNdw(dest);
+  const dest=await destinationCoords();
+  // Live-data en statische prijsgegevens onafhankelijk ophalen.
+  const [liveResult,staticResult]=await Promise.allSettled([directNdw(dest),nearbyNdw(dest)]);
+  if(staticResult.status==='rejected')throw staticResult.reason;
+  const {points,updated}=staticResult.value;
+  const liveOk=liveResult.status==='fulfilled';
+  const liveFeatures=liveOk?liveResult.value:[];
+  // Ook nieuwe locaties zonder lokaal tariefbestand opnemen (prijs onbekend).
+  if(liveOk)for(const f of liveFeatures){
+   const [lng,lat]=f.geometry.coordinates;if(!Number.isFinite(lat)||!Number.isFinite(lng))continue;
+   const coords={lat,lng};if(haversine(dest,coords)>500)continue;
+   if(points.some(x=>haversine(x.coords,coords)<=30))continue;
+   const id=String(f.id||lat+','+lng);
+   points.push({p:{id,naam:f.properties.address||'NDW-laadlocatie',adres:f.properties.address||'',plaats:'',aansluitingen:[]},coords,straight:haversine(dest,coords),tariff:null,sourceFile:'rechtstreeks NDW',tariffKeys:[],unknownTariffs:true,tariffDefinitions:{}});
+  }
+  for(const x of points){const f=liveOk?matchDirect(x,liveFeatures):null;x.direct=f?directAvailability(f):null;}
+
   const updatedTime=Date.parse(updated);
   const datasetAgeHours=Number.isFinite(updatedTime)?Math.max(0,(Date.now()-updatedTime)/3600000):Infinity;
   const datasetTime=Number.isFinite(updatedTime)?new Date(updatedTime).toLocaleString('nl-NL'):'onbekend';
-  $('dataFreshness').textContent='Controle uitgevoerd: '+new Date().toLocaleString('nl-NL')+'. NDW-bronbestand bijgewerkt: '+datasetTime+'. '+(datasetAgeHours<=6?'Bronbestand maximaal 6 uur oud.':'⚠️ Bronbestand ouder dan 6 uur of onbekend: actuele beschikbaarheid kan niet worden bevestigd.')+' Dit is geen live controle bij de exploitant.';
-  $('dataFreshness').className='status'+(datasetAgeHours<=6?' success':'');
+  const liveTimes=liveFeatures.map(f=>Date.parse(f.properties?.last_updated)).filter(Number.isFinite);
+  const newestLive=liveTimes.length?new Date(Math.max(...liveTimes)).toLocaleString('nl-NL'):'onbekend';
+  $('dataFreshness').textContent='Controle: '+new Date().toLocaleString('nl-NL')+'. '+(liveOk?'Rechtstreekse NDW-verbinding geslaagd ('+liveFeatures.length+' locaties; nieuwste status '+newestLive+').':'⚠️ Rechtstreekse NDW-verbinding mislukt ('+(liveResult.reason?.message||'browser/netwerk')+'). Alleen oude momentopname beschikbaar.')+' Prijsbestand: '+datasetTime+'. Een status is geen garantie voor een vrije parkeerplek bij aankomst.';
+  $('dataFreshness').className='status'+(liveOk?' success':'');
   if(!points.length){chargeMessage('Geen NDW-laadlocaties binnen 500 m hemelsbreed gevonden.');return}
   // Controleer alle geografische kandidaten: niet slechts de eerste 60.
   // Kleine batches beperken piekbelasting; bij fouten melden we dat de lijst onvolledig kan zijn.
@@ -332,10 +377,19 @@ $('refresh').onclick=async()=>{
    for(const r of results){if(r.error||r.walk===null)failures++;else if(r.walk<=500)found.push({...r.point,walk:r.walk})}
    chargeMessage('Looproutes gecontroleerd: '+Math.min(i+8,points.length)+' van '+points.length+'…');
   }
-  const candidates=found.map(x=>eligibleCharger(x,kwh,datasetAgeHours)).filter(Boolean);
+  const candidates=found.map(x=>{
+   const report=reportFor(x);if(report?.kind==='broken'||report?.kind==='missing')return null;
+   if(liveOk){
+    if(!x.direct||x.direct.total<=0||x.direct.free<=0)return null;
+    const t=Date.parse(x.direct.updated),age=Number.isFinite(t)?(Date.now()-t)/3600000:Infinity;
+    const old=eligibleCharger(x,kwh,datasetAgeHours);
+    return {...x,tariff:old?.tariff||x.tariff||null,tier:age>=0&&age<=0.25?0:1,availableCount:x.direct.free,latestAvailable:Number.isFinite(t)?t:null,live:true};
+   }
+   return eligibleCharger(x,kwh,Infinity);
+  }).filter(Boolean);
   const priced=candidates.filter(x=>x.tariff);
   const displayed=candidates.sort((a,b)=>a.tier-b.tier||(a.tariff?.total??Infinity)-(b.tariff?.total??Infinity)||a.walk-b.walk).slice(0,3);
-  if(!displayed.length){chargeMessage('Geen laadpalen met een AVAILABLE-melding gevonden binnen 500 m lopen. Bezette, defect gemelde, onbekende en eerder door jou als defect/niet gevonden gemelde locaties zijn niet aanbevolen. De NDW-bestanden zijn momentopnamen, geen live garantie. Probeer later opnieuw of controleer de exploitant.');return}
+  if(!displayed.length){chargeMessage((liveOk?'Geen vrije AC Type 2-aansluitingen volgens de rechtstreekse NDW-gegevens binnen 500 m lopen. Controleer de exploitant of zoek verder weg.':'Geen laadpalen met een AVAILABLE-melding binnen 500 m lopen volgens het oude prijsbestand. Rechtstreekse NDW-status is niet beschikbaar.'));return}
   for(const x of displayed){
    const el=document.createElement('article');el.className='charger';
     addText(el,'h3',x.p.naam||x.p.adres||'Laadlocatie');
@@ -345,8 +399,8 @@ $('refresh').onclick=async()=>{
     const latest=statusList.map(c=>c.bijgewerkt).filter(Boolean).sort().at(-1)||'onbekend';
     const available=statusList.filter(c=>c.status==='AVAILABLE').length;
     const trust=reliability(x);
-    addText(el,'p',(x.tier===0?'🟢 Recent vrij gemeld':'🟠 Eerder vrij gemeld – opnieuw controleren')+' · 🚶 '+Math.round(x.walk)+' m','mini-line');
-    addText(el,'p',(x.tier===0?'NDW-aansluiting én bronbestand maximaal 6 uur oud. ':'Aansluitingsstatus of bronbestand ouder dan 6 uur of onbekend. ')+(x.latestAvailable?'Laatste AVAILABLE-update: '+new Date(x.latestAvailable).toLocaleString('nl-NL')+'. ':'')+'Aanwezigheid en werking niet gegarandeerd.','uncertain');
+    addText(el,'p',(x.tier===0?'🟢 '+x.availableCount+' vrij volgens NDW':'🟠 '+(x.live?x.availableCount+' vrij gemeld, status ouder dan 15 min':'Eerder vrij gemeld – opnieuw controleren'))+' · 🚶 '+Math.round(x.walk)+' m','mini-line');
+    addText(el,'p',(x.live?'Rechtstreekse NDW-status. '+x.availableCount+' van '+x.direct.total+' AC Type 2-aansluitingen vrij gemeld. ':'⚠️ Alleen opgeslagen momentopname; niet actueel bevestigd. ')+(x.latestAvailable?'Laatste statusupdate: '+new Date(x.latestAvailable).toLocaleString('nl-NL')+'. ':'')+'Aanwezigheid en werking niet gegarandeerd.','uncertain');
     addText(el,'p',x.tariff?money(x.tariff.total)+' / '+fmt(kwh)+' kWh':'Tarief onbekend','price-main');
     addText(el,'p','Prijs indicatief · beschikbaarheid kan wijzigen','uncertain');
     const links=document.createElement('div');links.className='navlinks';
@@ -388,7 +442,7 @@ $('refresh').onclick=async()=>{
     tech.appendChild(diagnostic);details.appendChild(tech);el.appendChild(details);
    $('chargers').appendChild(el);
   }
-  chargeMessage(displayed.length+' laadlocaties met AVAILABLE-melding getoond: '+displayed.filter(x=>x.tier===0).length+' recent (groen), '+displayed.filter(x=>x.tier===1).length+' ouder/onbekend (oranje). Eerst betrouwbaarheid, dan prijs en loopafstand. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'NDW is geen live controle; een AVAILABLE-melding garandeert geen werkende laadpaal. Prijzen indicatief. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
+  chargeMessage((liveOk?'Rechtstreekse NDW-status':'⚠️ Alleen oude momentopname')+' · '+displayed.length+' laadlocaties met vrije melding getoond: '+displayed.filter(x=>x.tier===0).length+' recent (groen), '+displayed.filter(x=>x.tier===1).length+' ouder/onbekend (oranje). Eerst betrouwbaarheid, dan prijs en loopafstand. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'Vrije aansluitingen kunnen vóór aankomst bezet raken. Prijzen uit afzonderlijk, mogelijk ouder bestand. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
  }catch(e){chargeMessage('Zoeken mislukt: '+(e.message||String(e)))}finally{btn.disabled=false}
 };
 $('routeBtn').onclick=async()=>{
