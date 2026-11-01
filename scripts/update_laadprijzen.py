@@ -207,11 +207,23 @@ def schrijf_testbestand():
             for evse in locatie.get("evses") or []:
                 for connector in evse.get("connectors") or []:
                     if connector.get("standard") == "IEC_62196_T2":
+                                            gekoppelde_tarieven = []
+
+                    for tarief_id in connector.get("tariff_ids") or []:
+                        for tarief in tarieven_op_id.get(str(tarief_id), []):
+                            gekoppelde_tarieven.append({
+                                "id": tarief.get("id"),
+                                "aanbieder": tarief.get("party_id"),
+                                "landcode": tarief.get("country_code"),
+                                "valuta": tarief.get("currency"),
+                                "prijsopbouw": tarief.get("elements")
+                            })
                         aansluitingen.append({
                             "evse_id": evse.get("evse_id"),
                             "status": evse.get("status"),
                             "type": connector.get("standard"),
-                            "tarief_ids": connector.get("tariff_ids") or []
+                        "tarief_ids": connector.get("tariff_ids") or [],
+                        "tarieven": gekoppelde_tarieven
                         })
     
             resultaat["laadpalen"].append({
