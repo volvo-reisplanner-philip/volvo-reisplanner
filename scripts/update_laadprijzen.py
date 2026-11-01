@@ -40,6 +40,15 @@ def main():
 
     if gevonden_tarief:
         print("Gevonden tarief:", gevonden_tarief)
+        for element in gevonden_tarief.get("elements", []):
+            for onderdeel in element.get("price_components", []):
+                print(
+                    "Prijscomponent:",
+                    onderdeel.get("type"),
+                    "Prijs:", onderdeel.get("price"),
+                    "BTW:", onderdeel.get("vat"),
+                    "Stapgrootte:", onderdeel.get("step_size")
+                )
     else:
         print("Tarief-ID niet gevonden:", gezochte_tarief_id)
     if locaties:
