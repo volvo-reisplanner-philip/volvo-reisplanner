@@ -13,7 +13,7 @@ def download_ndw(url):
         compressed = response.read()
 
     return json.loads(gzip.decompress(compressed).decode("utf-8"))
-  def main():
+def main():
     print("NDW-laadlocaties downloaden...")
     locaties = download_ndw(LOCATIES_URL)
 
