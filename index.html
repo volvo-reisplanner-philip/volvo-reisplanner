@@ -33,7 +33,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 .tabbar button{font-size:.87rem;padding:11px 2px;background:#27465a;border-radius:8px}.tabbar button.active{background:#fff;color:#102d43}
 .view[hidden]{display:none!important}details.info{border-top:1px solid #e1e8ec;margin-top:9px;padding-top:9px}details.info summary{cursor:pointer;font-weight:650;color:#125577;padding:8px 0}
 .charger .mini-line{margin:7px 0;font-size:.91rem}.charger .price-main{font-size:1.35rem;font-weight:800;color:#12643f;margin:7px 0}.charger .navlinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.charger .navlinks a{font-size:.85rem;flex:1;text-align:center;white-space:nowrap;padding:10px 6px}
-.charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}.address-entry{display:flex;gap:7px;align-items:center}.address-entry{min-width:0;width:100%}.address-entry input{flex:1 1 0;min-width:0;width:0}.voice-btn{flex:0 0 44px;width:44px;padding:11px 0;display:inline-flex;align-items:center;justify-content:center}.maps-search{width:100%;min-width:0;overflow:visible}gmp-place-autocomplete{max-width:100%;min-width:0}.voice-btn.listening{background:#a03535}
+.charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}.address-entry{display:flex;gap:7px;align-items:center}.address-entry{min-width:0;width:100%}.address-entry input{flex:1 1 0;min-width:0;width:0}.voice-btn{flex:0 0 44px;width:44px;padding:11px 0;display:inline-flex;align-items:center;justify-content:center}.maps-search{width:100%;min-width:0;overflow:visible}gmp-place-autocomplete{max-width:100%;min-width:0}.voice-btn.listening{background:#a03535}.voice-choices{display:grid;gap:5px;margin:5px 0}.address-option{text-align:left;font-size:.84rem;padding:9px 11px;white-space:normal}
 @media(max-width:430px){.grid{grid-template-columns:1fr}.card{padding:14px}header{padding:13px 12px}header h1{font-size:1.3rem}header p{display:none}main{padding:10px 9px 85px}.tabbar{position:fixed;top:auto;bottom:0;left:0;right:0;padding:7px 8px max(7px,env(safe-area-inset-bottom));}.tabbar button{font-size:.82rem;padding:11px 0}.charger{padding:11px}.charger h3{font-size:.96rem}}
 </style>
 </head>
@@ -46,7 +46,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 <div class="wide"><label for="destination">Bestemming (adres)</label><div class="address-entry"><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort" enterkeyhint="done"><button type="button" id="voiceDestination" class="secondary voice-btn" aria-label="Bestemming dicteren">🎤</button></div></div>
 <div><label for="outkm">Heenreis (km)</label><input id="outkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
 <div><label for="backkm">Terugreis (km)</label><input id="backkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
-<div class="wide"><small class="muted">🎤 Dicteer of selecteer een Google Maps-adres. Heen- en terugafstand worden automatisch berekend; de berekenknop blijft beschikbaar.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
+<div class="wide"><small class="muted">🎤 Dicteren vult eerst het Google Maps-zoekveld. Kies daarna het juiste adres uit de resultaten. Heen- en terugafstand worden automatisch berekend.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
 <option value="winter">❄️ Winter – maximaal 61 km</option><option value="summer">☀️ Zomer – maximaal 81 km</option>
 <option value="manual">✏️ Handmatig instellen</option></select></div>
 <div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="number" min="1" max="1000" value="70"></div>
@@ -124,32 +124,41 @@ function setupDictation(id,buttonId){
   const rec=new Recognition();activeSpeech=rec;rec.lang='nl-NL';rec.interimResults=false;rec.maxAlternatives=1;
   button.classList.add('listening');button.textContent='⏹';status('Luisteren… spreek het adres in.');
   rec.onresult=async e=>{
-   const spoken=e.results?.[0]?.[0]?.transcript;
-   if(!spoken)return;
-   const phrase=spoken.trim();
-   status('Adres herkend: '+phrase+'. Google Maps controleert het adres…');
-   try{
-    await loadMaps();
-    const geocoder=new google.maps.Geocoder();
-    const result=await geocoder.geocode({address:phrase,region:'NL'});
-    const matches=result.results||[];
-    if(!matches.length)throw Error('Geen passend adres gevonden.');
-    const best=matches[0];
-    const exact=best.types?.includes('street_address')||best.types?.includes('premise')||best.types?.includes('subpremise');
-    input.value=best.formatted_address;
-    input.dispatchEvent(new Event('input',{bubbles:true}));
-    scheduleAutomaticRoute();
-    status((exact?'Google Maps-adres gevonden: ':'Controleer dit Google Maps-adres: ')+best.formatted_address+(exact?'':' (mogelijk niet exact).'),exact);
-   }catch(err){
-    input.value=phrase;
-    input.dispatchEvent(new Event('input',{bubbles:true}));
-    status('Google Maps kon het gedicteerde adres niet controleren ('+err.message+'). Selecteer zo nodig een adres bij 🔎 Zoek via Google Maps.');
-   }
+   const phrase=e.results?.[0]?.[0]?.transcript?.trim();
+   if(!phrase)return;
+   await searchSpokenAddress(id,phrase);
   };
   rec.onerror=e=>status('Dicteren niet beschikbaar ('+e.error+'). Gebruik eventueel de microfoon op het toetsenbord.');
   rec.onend=()=>{button.classList.remove('listening');button.textContent='🎤';if(activeSpeech===rec)activeSpeech=null};
   try{rec.start()}catch(e){status('Dicteren kon niet starten. Gebruik de microfoon op het toetsenbord.')}
  });
+}
+// Spraak gaat eerst naar het Google Maps-ZOEKveld, nooit direct naar het definitieve adres.
+async function searchSpokenAddress(id,phrase){
+ const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');
+ if(!query||!choices){status('Google Maps-zoekveld nog niet geladen. Controleer de Maps-verbinding.');return}
+ query.value=phrase;choices.replaceChildren();
+ status('Google Maps zoekt naar: '+phrase+'…');
+ try{
+  await loadMaps();
+  const response=await new google.maps.Geocoder().geocode({address:phrase,region:'NL'});
+  const results=(response.results||[]).slice(0,5);
+  if(!results.length)throw Error('Geen adres gevonden');
+  const caption=document.createElement('small');caption.className='muted';caption.textContent='Kies het juiste Google Maps-adres:';choices.append(caption);
+  for(const item of results){
+   const option=document.createElement('button');option.type='button';option.className='secondary address-option';option.textContent='📍 '+item.formatted_address;
+   option.addEventListener('click',()=>{
+    $(id).value=item.formatted_address;
+    query.value=item.formatted_address;
+    choices.replaceChildren();
+    $(id).dispatchEvent(new Event('change',{bubbles:true}));
+    calc();scheduleAutomaticRoute();
+    status((id==='origin'?'Vertrekadres':'Bestemming')+' via Google Maps gekozen: '+item.formatted_address,true);
+   });
+   choices.append(option);
+  }
+  status('Selecteer het juiste adres uit de Google Maps-resultaten.');
+ }catch(err){status('Google Maps zoeken mislukt: '+err.message+'. Probeer een andere zoekopdracht.');}
 }
 setupDictation('origin','voiceOrigin');setupDictation('destination','voiceDestination');
 function updateRouteTotal(){const out=Number($('outkm').value),back=Number($('backkm').value);$('routeTotal').textContent='Totaal heen en terug: '+(Number.isFinite(out)&&Number.isFinite(back)&&$('outkm').value!==''&&$('backkm').value!==''?fmt(out+back)+' km':'— km')}
@@ -203,7 +212,10 @@ async function initMaps(){
    label.textContent='🔎 Zoek een adres via Google Maps (selecteer een suggestie):';
    const widget=new PlaceAutocompleteElement();
    widget.setAttribute('placeholder','🔎 Zoek '+(id==='origin'?'vertrekadres':'bestemming')+' via Google Maps');
-   search.append(label,widget);input.closest('.address-entry').insertAdjacentElement('afterend',search);
+   const voiceQuery=document.createElement('input');voiceQuery.id=id+'VoiceSearch';voiceQuery.placeholder='🎤 Gesproken adres zoeken via Google Maps';voiceQuery.setAttribute('aria-label','Google Maps zoek'+(id==='origin'?'vertrekadres':'bestemming'));
+   voiceQuery.addEventListener('change',()=>{if(voiceQuery.value.trim())searchSpokenAddress(id,voiceQuery.value.trim())});
+   const voiceChoices=document.createElement('div');voiceChoices.id=id+'VoiceChoices';voiceChoices.className='voice-choices';
+   search.append(label,voiceQuery,voiceChoices,widget);input.closest('.address-entry').insertAdjacentElement('afterend',search);
    widget.addEventListener('gmp-select',async event=>{
     try{
      const prediction=event.placePrediction;
