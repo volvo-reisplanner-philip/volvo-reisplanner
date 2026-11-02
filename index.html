@@ -46,7 +46,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 <div class="wide"><label for="destination">Bestemming (adres)</label><div class="address-entry"><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort" enterkeyhint="done"><button type="button" id="voiceDestination" class="secondary voice-btn" aria-label="Bestemming dicteren">🎤</button></div></div>
 <div><label for="outkm">Heenreis (km)</label><input id="outkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
 <div><label for="backkm">Terugreis (km)</label><input id="backkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
-<div class="wide"><small class="muted">🎤 Spreek het adres in, controleer de tekst en bereken daarna de route. Op iPhone kun je ook de microfoon van het toetsenbord gebruiken.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
+<div class="wide"><small class="muted">🎤 Dicteren laat Google Maps het adres controleren. Controleer het resultaat; kies bij twijfel een suggestie onder 🔎 Zoek via Google Maps.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
 <option value="winter">❄️ Winter – maximaal 61 km</option><option value="summer">☀️ Zomer – maximaal 81 km</option>
 <option value="manual">✏️ Handmatig instellen</option></select></div>
 <div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="number" min="1" max="1000" value="70"></div>
@@ -123,7 +123,28 @@ function setupDictation(id,buttonId){
   if(activeSpeech){try{activeSpeech.stop()}catch(e){} activeSpeech=null}
   const rec=new Recognition();activeSpeech=rec;rec.lang='nl-NL';rec.interimResults=false;rec.maxAlternatives=1;
   button.classList.add('listening');button.textContent='⏹';status('Luisteren… spreek het adres in.');
-  rec.onresult=e=>{const spoken=e.results?.[0]?.[0]?.transcript;if(spoken){input.value=spoken.trim();input.dispatchEvent(new Event('input',{bubbles:true}));status('Adres herkend. Controleer de spelling en klik op Bereken afstand.',true)}};
+  rec.onresult=async e=>{
+   const spoken=e.results?.[0]?.[0]?.transcript;
+   if(!spoken)return;
+   const phrase=spoken.trim();
+   status('Adres herkend: '+phrase+'. Google Maps controleert het adres…');
+   try{
+    await loadMaps();
+    const geocoder=new google.maps.Geocoder();
+    const result=await geocoder.geocode({address:phrase,region:'NL'});
+    const matches=result.results||[];
+    if(!matches.length)throw Error('Geen passend adres gevonden.');
+    const best=matches[0];
+    const exact=best.types?.includes('street_address')||best.types?.includes('premise')||best.types?.includes('subpremise');
+    input.value=best.formatted_address;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    status((exact?'Google Maps-adres gevonden: ':'Controleer dit Google Maps-adres: ')+best.formatted_address+(exact?'':' (mogelijk niet exact).'),exact);
+   }catch(err){
+    input.value=phrase;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    status('Google Maps kon het gedicteerde adres niet controleren ('+err.message+'). Selecteer zo nodig een adres bij 🔎 Zoek via Google Maps.');
+   }
+  };
   rec.onerror=e=>status('Dicteren niet beschikbaar ('+e.error+'). Gebruik eventueel de microfoon op het toetsenbord.');
   rec.onend=()=>{button.classList.remove('listening');button.textContent='🎤';if(activeSpeech===rec)activeSpeech=null};
   try{rec.start()}catch(e){status('Dicteren kon niet starten. Gebruik de microfoon op het toetsenbord.')}
