@@ -33,7 +33,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 .tabbar button{font-size:.87rem;padding:11px 2px;background:#27465a;border-radius:8px}.tabbar button.active{background:#fff;color:#102d43}
 .view[hidden]{display:none!important}details.info{border-top:1px solid #e1e8ec;margin-top:9px;padding-top:9px}details.info summary{cursor:pointer;font-weight:650;color:#125577;padding:8px 0}
 .charger .mini-line{margin:7px 0;font-size:.91rem}.charger .price-main{font-size:1.35rem;font-weight:800;color:#12643f;margin:7px 0}.charger .navlinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.charger .navlinks a{font-size:.85rem;flex:1;text-align:center;white-space:nowrap;padding:10px 6px}
-.charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}.address-entry{display:flex;gap:7px;align-items:center}.address-entry input{flex:1}.voice-btn{flex:0 0 auto;padding:11px 12px}.voice-btn.listening{background:#a03535}
+.charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}.address-entry{display:flex;gap:7px;align-items:center}.address-entry{min-width:0;width:100%}.address-entry input{flex:1 1 0;min-width:0;width:0}.voice-btn{flex:0 0 44px;width:44px;padding:11px 0;display:inline-flex;align-items:center;justify-content:center}.maps-search{width:100%;min-width:0;overflow:visible}gmp-place-autocomplete{max-width:100%;min-width:0}.voice-btn.listening{background:#a03535}
 @media(max-width:430px){.grid{grid-template-columns:1fr}.card{padding:14px}header{padding:13px 12px}header h1{font-size:1.3rem}header p{display:none}main{padding:10px 9px 85px}.tabbar{position:fixed;top:auto;bottom:0;left:0;right:0;padding:7px 8px max(7px,env(safe-area-inset-bottom));}.tabbar button{font-size:.82rem;padding:11px 0}.charger{padding:11px}.charger h3{font-size:.96rem}}
 </style>
 </head>
@@ -46,7 +46,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 <div class="wide"><label for="destination">Bestemming (adres)</label><div class="address-entry"><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort" enterkeyhint="done"><button type="button" id="voiceDestination" class="secondary voice-btn" aria-label="Bestemming dicteren">🎤</button></div></div>
 <div><label for="outkm">Heenreis (km)</label><input id="outkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
 <div><label for="backkm">Terugreis (km)</label><input id="backkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
-<div class="wide"><small class="muted">🎤 Dicteren laat Google Maps het adres controleren. Controleer het resultaat; kies bij twijfel een suggestie onder 🔎 Zoek via Google Maps.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
+<div class="wide"><small class="muted">🎤 Dicteer of selecteer een Google Maps-adres. Heen- en terugafstand worden automatisch berekend; de berekenknop blijft beschikbaar.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
 <option value="winter">❄️ Winter – maximaal 61 km</option><option value="summer">☀️ Zomer – maximaal 81 km</option>
 <option value="manual">✏️ Handmatig instellen</option></select></div>
 <div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="number" min="1" max="1000" value="70"></div>
@@ -138,6 +138,7 @@ function setupDictation(id,buttonId){
     const exact=best.types?.includes('street_address')||best.types?.includes('premise')||best.types?.includes('subpremise');
     input.value=best.formatted_address;
     input.dispatchEvent(new Event('input',{bubbles:true}));
+    scheduleAutomaticRoute();
     status((exact?'Google Maps-adres gevonden: ':'Controleer dit Google Maps-adres: ')+best.formatted_address+(exact?'':' (mogelijk niet exact).'),exact);
    }catch(err){
     input.value=phrase;
@@ -168,6 +169,8 @@ function mapsLink(dest){
  u.searchParams.set('api','1');u.searchParams.set('destination',dest);u.searchParams.set('travelmode','driving');
  if($('origin').value.trim())u.searchParams.set('origin',$('origin').value.trim());return u.toString();
 }
+$('origin').addEventListener('change',scheduleAutomaticRoute);
+$('destination').addEventListener('change',scheduleAutomaticRoute);
 $('mapsBtn').onclick=()=>{const d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}window.open(mapsLink(d),'_blank','noopener,noreferrer')};
 function loadMaps(){
  if(window.google?.maps?.importLibrary)return Promise.resolve();
@@ -200,7 +203,7 @@ async function initMaps(){
    label.textContent='🔎 Zoek een adres via Google Maps (selecteer een suggestie):';
    const widget=new PlaceAutocompleteElement();
    widget.setAttribute('placeholder','🔎 Zoek '+(id==='origin'?'vertrekadres':'bestemming')+' via Google Maps');
-   search.append(label,widget);input.insertAdjacentElement('afterend',search);
+   search.append(label,widget);input.closest('.address-entry').insertAdjacentElement('afterend',search);
    widget.addEventListener('gmp-select',async event=>{
     try{
      const prediction=event.placePrediction;
@@ -209,14 +212,14 @@ async function initMaps(){
      await place.fetchFields({fields:['formattedAddress','displayName']});
      const address=place.formattedAddress||place.displayName;
      if(!address)throw Error('Geen adresgegevens ontvangen.');
-     input.value=address;calc();
+     input.value=address;calc();scheduleAutomaticRoute();
      status((id==='origin'?'Vertrekadres':'Bestemming')+' geselecteerd.',true);
     }catch(e){status('Adres selecteren mislukt: '+e.message)}
    });
    widgets.push(search);
   }
   $('apiKey').value='';$('mapsStatus').textContent='Google Maps verbonden. Adressuggesties actief.';
-  status('Google Maps verbonden.',true);
+  status('Google Maps verbonden.',true);scheduleAutomaticRoute();
  }catch(e){mapsReady=false;status('Google Maps niet verbonden: '+e.message);$('mapsStatus').textContent='Verbinding mislukt. Controleer API-rechten, websitebeperkingen en facturering.'}
 }
 $('connect').onclick=()=>{
@@ -486,6 +489,12 @@ $('refresh').onclick=async()=>{
   chargeMessage((liveOk?'Rechtstreekse NDW-status':'⚠️ Alleen oude momentopname')+' · '+displayed.length+' laadlocaties met vrije melding getoond: '+displayed.filter(x=>x.tier===0).length+' recent (groen), '+displayed.filter(x=>x.tier===1).length+' ouder/onbekend (oranje). Eerst betrouwbaarheid, dan prijs en loopafstand. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'Vrije aansluitingen kunnen vóór aankomst bezet raken. Prijzen uit afzonderlijk, mogelijk ouder bestand. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
  }catch(e){chargeMessage('Zoeken mislukt: '+(e.message||String(e)))}finally{btn.disabled=false}
 };
+let autoRouteTimer=null;
+function scheduleAutomaticRoute(){
+ clearTimeout(autoRouteTimer);
+ if(!$('origin').value.trim()||!$('destination').value.trim()||!mapsReady)return;
+ autoRouteTimer=setTimeout(()=>{if(!$('routeBtn').disabled)$('routeBtn').click()},650);
+}
 $('routeBtn').onclick=async()=>{
  if(!mapsReady||!routeClass){status('Verbind eerst Google Maps onder onderdeel 5.');return}
  const o=$('origin').value.trim(),d=$('destination').value.trim();
