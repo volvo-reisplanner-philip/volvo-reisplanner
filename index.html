@@ -33,7 +33,7 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 .tabbar button{font-size:.87rem;padding:11px 2px;background:#27465a;border-radius:8px}.tabbar button.active{background:#fff;color:#102d43}
 .view[hidden]{display:none!important}details.info{border-top:1px solid #e1e8ec;margin-top:9px;padding-top:9px}details.info summary{cursor:pointer;font-weight:650;color:#125577;padding:8px 0}
 .charger .mini-line{margin:7px 0;font-size:.91rem}.charger .price-main{font-size:1.35rem;font-weight:800;color:#12643f;margin:7px 0}.charger .navlinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.charger .navlinks a{font-size:.85rem;flex:1;text-align:center;white-space:nowrap;padding:10px 6px}
-.charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}
+.charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}.address-entry{display:flex;gap:7px;align-items:center}.address-entry input{flex:1}.voice-btn{flex:0 0 auto;padding:11px 12px}.voice-btn.listening{background:#a03535}
 @media(max-width:430px){.grid{grid-template-columns:1fr}.card{padding:14px}header{padding:13px 12px}header h1{font-size:1.3rem}header p{display:none}main{padding:10px 9px 85px}.tabbar{position:fixed;top:auto;bottom:0;left:0;right:0;padding:7px 8px max(7px,env(safe-area-inset-bottom));}.tabbar button{font-size:.82rem;padding:11px 0}.charger{padding:11px}.charger h3{font-size:.96rem}}
 </style>
 </head>
@@ -42,11 +42,11 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 <nav class="tabbar" aria-label="Schermen"><button type="button" data-tab="route" class="active">🚗 Route</button><button type="button" data-tab="laden">⚡ Laden</button><button type="button" data-tab="kosten">💶 Kosten</button><button type="button" data-tab="meer">⚙️ Meer</button></nav>
 <main>
 <div class="view" data-view="route"><section class="card"><h2>Route</h2><div class="grid">
-<div class="wide"><label for="origin">Vertrekadres</label><input id="origin" value="Waterjufferstraat 4, Beekbergen"></div>
-<div class="wide"><label for="destination">Bestemming (adres)</label><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort"></div>
+<div class="wide"><label for="origin">Vertrekadres</label><div class="address-entry"><input id="origin" value="Waterjufferstraat 4, Beekbergen" autocomplete="street-address" enterkeyhint="done"><button type="button" id="voiceOrigin" class="secondary voice-btn" aria-label="Vertrekadres dicteren">🎤</button></div></div>
+<div class="wide"><label for="destination">Bestemming (adres)</label><div class="address-entry"><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort" enterkeyhint="done"><button type="button" id="voiceDestination" class="secondary voice-btn" aria-label="Bestemming dicteren">🎤</button></div></div>
 <div><label for="outkm">Heenreis (km)</label><input id="outkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
 <div><label for="backkm">Terugreis (km)</label><input id="backkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
-<div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
+<div class="wide"><small class="muted">🎤 Spreek het adres in, controleer de tekst en bereken daarna de route. Op iPhone kun je ook de microfoon van het toetsenbord gebruiken.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
 <option value="winter">❄️ Winter – maximaal 61 km</option><option value="summer">☀️ Zomer – maximaal 81 km</option>
 <option value="manual">✏️ Handmatig instellen</option></select></div>
 <div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="number" min="1" max="1000" value="70"></div>
@@ -113,6 +113,26 @@ const n=id=>{const x=Number($(id).value);return Number.isFinite(x)&&x>=0?x:0};
 let mapsReady=false,routeClass=null,mapsLoadPromise=null,widgets=[];
 const mapsKeyName='volvo-planner-key-v2';
 function status(message,ok=false){$('routeStatus').textContent=message;$('routeStatus').className='status'+(ok?' success':'')}
+// Dicteren via de browser waar Web Speech beschikbaar is; iOS-toetsenbord blijft fallback.
+let activeSpeech=null;
+function setupDictation(id,buttonId){
+ const button=$(buttonId),input=$(id);
+ button.addEventListener('click',()=>{
+  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!Recognition){input.focus();status('Gebruik de microfoon op het iPhone-toetsenbord om het adres te dicteren. Controleer daarna het adres.');return}
+  if(activeSpeech){try{activeSpeech.stop()}catch(e){} activeSpeech=null}
+  const rec=new Recognition();activeSpeech=rec;rec.lang='nl-NL';rec.interimResults=false;rec.maxAlternatives=1;
+  button.classList.add('listening');button.textContent='⏹';status('Luisteren… spreek het adres in.');
+  rec.onresult=e=>{const spoken=e.results?.[0]?.[0]?.transcript;if(spoken){input.value=spoken.trim();input.dispatchEvent(new Event('input',{bubbles:true}));status('Adres herkend. Controleer de spelling en klik op Bereken afstand.',true)}};
+  rec.onerror=e=>status('Dicteren niet beschikbaar ('+e.error+'). Gebruik eventueel de microfoon op het toetsenbord.');
+  rec.onend=()=>{button.classList.remove('listening');button.textContent='🎤';if(activeSpeech===rec)activeSpeech=null};
+  try{rec.start()}catch(e){status('Dicteren kon niet starten. Gebruik de microfoon op het toetsenbord.')}
+ });
+}
+setupDictation('origin','voiceOrigin');setupDictation('destination','voiceDestination');
+function updateRouteTotal(){const out=Number($('outkm').value),back=Number($('backkm').value);$('routeTotal').textContent='Totaal heen en terug: '+(Number.isFinite(out)&&Number.isFinite(back)&&$('outkm').value!==''&&$('backkm').value!==''?fmt(out+back)+' km':'— km')}
+['outkm','backkm'].forEach(id=>$(id).addEventListener('input',updateRouteTotal));
+
 function calc(){
  const out=n('outkm'),back=n('backkm'),cap=$('season').value==='winter'?61:$('season').value==='summer'?81:n('manualCapacity');
  const home=Math.min(out+back,n('range'),cap),homeOutbound=Math.min(out,home),remainingHome=Math.max(0,home-homeOutbound);
@@ -457,10 +477,11 @@ $('routeBtn').onclick=async()=>{
    return meters/1000;
   };
   const [out,back]=await Promise.all([calculateRoute(o,d),calculateRoute(d,o)]);
-  $('outkm').value=out.toFixed(1);$('backkm').value=back.toFixed(1);calc();
+  $('outkm').value=out.toFixed(1);$('backkm').value=back.toFixed(1);updateRouteTotal();calc();
   status('Afstanden berekend: '+fmt(out)+' km heen, '+fmt(back)+' km terug.',true);
  }catch(e){status('Routeberekening mislukt: '+e.message)}finally{button.disabled=false}
 };
+updateRouteTotal();
 function updateManualCapacity(){$('manualCapacityBox').classList.toggle('hidden',$('season').value!=='manual')}
 $('season').addEventListener('change',()=>{
  updateManualCapacity();
