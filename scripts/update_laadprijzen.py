@@ -73,7 +73,7 @@ def main():
         aansluitingen = []
         for evse in locatie.get("evses") or []:
             for connector in evse.get("connectors") or []:
-                if connector.get("standard") != "IEC_62196_T2":
+                if connector.get("standard") != "IEC_62196_T2" or not str(connector.get("power_type", "")).startswith("AC") :
                     continue
                 refs = []
                 onbekend = []
@@ -89,6 +89,9 @@ def main():
                         tarief = kandidaten[0]
                         gebruikte_tarieven[ref] = {
                             "valuta": tarief.get("currency"),
+                            "type": tarief.get("type"),
+                            "minimumprijs": tarief.get("min_price"),
+                            "maximumprijs": tarief.get("max_price"),
                             "prijsopbouw": prijsopbouw_compact(tarief.get("elements")),
                             "geldig_vanaf": tarief.get("start_date_time"),
                             "geldig_tot": tarief.get("end_date_time"),
@@ -96,6 +99,9 @@ def main():
                     refs.append(ref)
                 aansluitingen.append({
                     "id": evse.get("evse_id"),
+                    "connector_id": connector.get("id"),
+                    "standard": connector.get("standard"),
+                    "power_type": connector.get("power_type"),
                     "status": evse.get("status"),
                     "bijgewerkt": evse.get("last_updated"),
                     "tarieven": refs,
@@ -142,7 +148,7 @@ def main():
     for paal in laadpalen:
         try:
             lat, lon = float(paal["lat"]), float(paal["lon"])
-            if not (math.isfinite(lat) and math.isfinite(lon)):
+            if not (math.isfinite(lat) and math.isfinite(lon) and 50 <= lat <= 54 and 3 <= lon <= 8):
                 raise ValueError("Ongeldige coördinaten")
             sleutel = (math.floor(lat / TEGEL_GROOTTE), math.floor(lon / TEGEL_GROOTTE))
             tegels[sleutel].append(paal)
