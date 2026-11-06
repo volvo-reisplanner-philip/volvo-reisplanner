@@ -55,7 +55,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <div class="wide"><label for="destination">Bestemming (adres)</label><div class="address-entry"><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort" enterkeyhint="done"><button type="button" id="voiceDestination" class="secondary voice-btn" aria-label="Bestemming dicteren">🎤</button></div></div>
 <div><label for="outkm">Heenreis (km)</label><input id="outkm" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.1" placeholder="Via Google Maps"></div>
 <div><label for="backkm">Terugreis (km)</label><input id="backkm" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.1" placeholder="Via Google Maps"></div>
-<div class="wide"><small class="muted">🎤 Dicteren vult eerst het Google Maps-zoekveld. Kies daarna het juiste adres uit de gewone resultatenlijst. Op de Mac: start via Start Volvo Reisplanner.command. Zet in Chrome bij Site-instellingen de microfoon één keer op Toestaan. De microfoon wordt alleen actief wanneer je op 🎤 klikt.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
+<div class="wide"><small class="muted">🎤 Op iPhone: tik daarna op de microfoon van je schermtoetsenbord. Op de Mac vult dicteren het Google Maps-zoekveld. Kies daarna het juiste adres uit de resultatenlijst. Op de Mac: start via Start Volvo Reisplanner.command. Zet in Chrome bij Site-instellingen de microfoon één keer op Toestaan. De microfoon wordt alleen actief wanneer je op 🎤 klikt.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
 <option value="winter">❄️ Winter – maximaal 61 km</option><option value="summer">☀️ Zomer – maximaal 81 km</option>
 <option value="manual">✏️ Handmatig instellen</option></select></div>
 <div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" max="1000" value="70"></div>
@@ -65,6 +65,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <div class="actions"><button id="routeBtn">Bereken afstand met Google Maps</button><button id="mapsBtn" class="secondary">Open bestemming in Google Maps ↗</button><button id="returnMaps" class="secondary">Terugroute in Google Maps ↗</button><button id="shareDestination" class="secondary">Bestemming delen / kopiëren</button></div>
 <div id="routeStatus" class="status">Automatische afstand vereist een Google Maps API-sleutel. Zonder sleutel kun je de kilometers handmatig invullen.</div>
 <p class="muted">Vul het actuele elektrische bereik van je Volvo in. Extra bereik na laden is het aantal extra kilometers dat je op de bestemming verwacht bij te laden.</p>
+<div class="actions"><button id="reset" class="secondary">Invoer herstellen</button></div><small class="muted">Herstelt route-, laad- en kosteninvoer. Je adresboek, Google Maps-sleutel en browsertoestemming blijven behouden.</small>
 </section>
 </div><div class="view" data-view="meer" hidden><section class="card"><h2>Adresboek en contacten</h2><p class="muted">Importeer gekozen Apple-contacten als vCard (.vcf). Alleen namen en postadressen komen lokaal in dit adresboek; geen telefoonnummers, e-mail, notities of foto's. Er is geen automatische synchronisatie met Apple Contacten. Adressen gaan pas naar Google wanneer je ze als vertrek of bestemming gebruikt en een route/adres laat berekenen.</p><div class="grid"><div class="wide"><label for="bookTarget">Gekozen adres gebruiken als</label><select id="bookTarget"><option value="destination">Bestemming</option><option value="origin">Vertrekadres</option></select></div><div class="wide"><label for="bookFilter">Zoek op naam of adres</label><input id="bookFilter" type="search" placeholder="Naam, straat of plaats"></div><div class="wide"><label for="book">Opgeslagen adressen en contacten</label><select id="book"><option value="">Kies een bestemming…</option></select></div></div>
 <div class="actions"><button id="save" class="secondary">Bestemming bewaren</button><button id="remove" class="secondary">Verwijderen</button></div>
@@ -101,7 +102,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <p id="mapsStatus" class="muted" role="status">Google Maps nog niet verbonden.</p>
 <p class="muted">Voor automatisch routes berekenen zijn Google Maps JavaScript API, Routes en Places nodig. Beperk je browsersleutel op website en toegestane API's. De sleutel wordt alleen lokaal opgeslagen en niet in GitHub gepubliceerd.</p>
 </section>
-<div class="actions"><button id="print" class="secondary">Afdrukken / PDF</button><button id="reset" class="secondary">Invoer herstellen</button></div>
+<div class="actions"><button id="print" class="secondary">Afdrukken / PDF</button></div>
 <details class="info"><summary>Bestemming naar je Volvo</summary><p class="muted">Open de bestemming in Google Maps op je telefoon. Bij een ondersteunde auto en account kan ‘Naar auto sturen’ beschikbaar zijn. De reisplanner kan ontvangst door de auto niet bevestigen. Bij Sensus Navigation kun je de bestemming in de Volvo Cars-app zoeken en ‘Send to car’ gebruiken. Beschikbaarheid hangt af van model, software en diensten. Gebruik Delen/kopiëren om het adres over te nemen.</p><a href="https://www.volvocars.com/uk/support/topic/c7bac0678accca8bc0a80151259ca619/" target="_blank" rel="noopener noreferrer">Volvo-instructies</a></details>
 </div></main>
 <script src="planner-core.js"></script>
@@ -111,6 +112,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
+const isAppleMobile=()=>/iPhone|iPad|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
  function switchTab(tab){
   document.querySelectorAll('.view').forEach(v=>v.hidden=v.dataset.view!==tab);
   document.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});
@@ -119,6 +121,7 @@ const $=id=>document.getElementById(id);
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 
 const fields=['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee','sessionMode','origin','destination','outkm','backkm','season','manualCapacity','range','rangeAfter','homePrice','petrolPrice','elecUse','fuelUse','publicPrice','startFee'];
+const initialInput=Object.fromEntries(fields.map(id=>[id,$(id).value]));
 const money=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n);
 const fmt=n=>new Intl.NumberFormat('nl-NL',{maximumFractionDigits:1}).format(n);
 const n=id=>PlannerCore.number($(id).value);
@@ -158,7 +161,9 @@ function setupDictation(id,buttonId){
  const button=$(buttonId),input=$(id);
  button.addEventListener('click',()=>{
   const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!Recognition){input.focus();status('Typ het adres, of gebruik de dicteerfunctie van je Mac/iPhone. Controleer daarna het adres.');return}
+  const keyboardHelp=()=>{const field=$(id+'VoiceSearch')||input;field.focus();const message='Dicteren via de website werkt hier niet. Tik op de microfoon van het iPhone-toetsenbord, spreek het adres in en tik daarna op Zoek adres. Ontbreekt de toetsenbordmicrofoon? Zet Dicteren aan bij Instellingen → Algemeen → Toetsenbord.';addressMessage(id,message);status(message)};
+  if(isAppleMobile()){const field=$(id+'VoiceSearch')||input;field.focus();const message='Tik nu op 🎤 onderaan het iPhone-toetsenbord om je adres te dicteren. Tik daarna op Zoek adres en kies een resultaat. De website kan de toetsenbordmicrofoon niet zelf starten.';addressMessage(id,message);status(message);return}
+  if(!Recognition){keyboardHelp();return}
   if(activeSpeech){const same=activeSpeech===button.speechRecognition;try{activeSpeech.stop()}catch(e){}activeSpeech=null;if(same)return}
   const rec=button.speechRecognition||(button.speechRecognition=new Recognition());activeSpeech=rec;rec.lang='nl-NL';rec.interimResults=false;rec.maxAlternatives=1;
   button.classList.add('listening');button.textContent='⏹';status('Luisteren… spreek het adres in.');addressMessage(id,'Microfoon gestart. Spreek straat, huisnummer en plaats in.');
@@ -167,9 +172,9 @@ function setupDictation(id,buttonId){
    if(!phrase)return;
    await searchSpokenAddress(id,phrase);
   };
-  rec.onerror=e=>{const message=e.error==='not-allowed'?'Microfoon: toegang geweigerd. Controleer de microfoonrechten van deze site én Chrome in de Mac-instellingen.':e.error==='network'?'Microfoon: de spraakdienst is niet bereikbaar (network). De microfoontoestemming alleen verhelpt dit niet; typ het adres om verder te gaan.':e.error==='no-speech'?'Microfoon: geen spraak gehoord. Controleer de gekozen microfoon in Chrome en spreek opnieuw.':'Dicteren niet beschikbaar ('+e.error+'). Je kunt het adres ook typen.';addressMessage(id,message);status(message)};
+  rec.onerror=e=>{if(activeSpeech===rec)activeSpeech=null;button.speechRecognition=null;button.classList.remove('listening');button.textContent='🎤';const message=e.error==='not-allowed'?'Microfoon: toegang geweigerd. Controleer microfoontoegang voor de website en browser in je apparaatinstellingen. Op de iPhone kun je ook de microfoon van het toetsenbord gebruiken.':e.error==='network'?'Microfoon: de spraakdienst is niet bereikbaar (network). De microfoontoestemming alleen verhelpt dit niet; typ het adres om verder te gaan.':e.error==='no-speech'?'Microfoon: geen spraak gehoord. Controleer de gekozen microfoon in Chrome en spreek opnieuw.':'Dicteren niet beschikbaar ('+e.error+'). Je kunt het adres ook typen.';addressMessage(id,message);status(message)};
   rec.onend=()=>{button.classList.remove('listening');button.textContent='🎤';if(activeSpeech===rec)activeSpeech=null};
-  try{rec.start()}catch(e){status('Dicteren kon niet starten. Gebruik de microfoon op het toetsenbord.')}
+  try{rec.start()}catch(e){activeSpeech=null;button.speechRecognition=null;button.classList.remove('listening');button.textContent='🎤';keyboardHelp()}
  });
 }
 // Accepteer zowel Googles callback- als Promise-interface; nooit undefined uitlezen.
@@ -195,7 +200,7 @@ function addressMessage(id,message,ok=false){const box=$(id+'SearchStatus');if(b
 const addressSessions={};
 async function searchSpokenAddress(id,phrase){
  const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');
- if(!query||!choices){status('Google Maps-zoekveld nog niet geladen. Controleer de Maps-verbinding.');return}
+ if(!query||!choices){$(id).value=phrase;$(id).dispatchEvent(new Event('change',{bubbles:true}));calc();status('Gesproken adres ingevuld. Verbind Google Maps onder Meer om het adres te zoeken en de route te berekenen.');return}
  query.value=phrase;choices.replaceChildren();
  status('Google Maps zoekt naar: '+phrase+'…');
  try{
@@ -309,7 +314,13 @@ async function initMaps(){
    fallback.addEventListener('click',()=>{clearTimeout(addressTimer);const phrase=voiceQuery.value.trim()||input.value.trim();if(!phrase){voiceQuery.focus();status('Typ eerst een adres in het zoekveld.');return}searchSpokenAddress(id,phrase)});
    const help=document.createElement('small');help.className='muted';help.textContent='Typ in het extra zoekveld hieronder of gebruik de microfoon. De Google-resultaten verschijnen onder Zoek adres in een scrollbare lijst. Veeg op je iPhone binnen die lijst. Het ingebouwde Google-menu hierboven blijft ook beschikbaar.';
    const searchStatus=document.createElement('p');searchStatus.id=id+'SearchStatus';searchStatus.setAttribute('role','status');
-   search.append(label,widget,voiceQuery,help,fallback,searchStatus,voiceChoices);input.closest('.address-entry').insertAdjacentElement('afterend',search);
+   if(isAppleMobile()){
+    label.textContent='🔎 Google Maps-adreszoeken';voiceQuery.placeholder='Typ hier of dicteer met het iPhone-toetsenbord';voiceQuery.setAttribute('enterkeyhint','search');
+    help.textContent='Tik in het zoekveld en gebruik 🎤 op het iPhone-toetsenbord. Tik daarna op Zoek adres. Veeg binnen de resultatenlijst om alle resultaten te zien.';
+    const nativeMenu=document.createElement('details'),nativeSummary=document.createElement('summary');nativeSummary.textContent='Ander Google-zoekmenu (optioneel)';nativeMenu.append(nativeSummary,widget);
+    search.append(label,voiceQuery,help,fallback,searchStatus,voiceChoices,nativeMenu);
+   }else{search.append(label,widget,voiceQuery,help,fallback,searchStatus,voiceChoices)}
+   input.closest('.address-entry').insertAdjacentElement('afterend',search);
    widget.addEventListener('gmp-error',()=>{const message='Google Places-adressuggesties niet beschikbaar. Gebruik Zoek adres hieronder; de uitkomst verschijnt direct hier. Controleer bij weigering Places API (New) en websitebeperkingen.';addressMessage(id,message);status(message)});
    widget.addEventListener('gmp-select',async event=>{
     try{
@@ -637,7 +648,20 @@ $('save').onclick=()=>{
 $('book').onchange=()=>{const i=$('book').value;if(i==='')return;const x=getBook()[Number(i)];if(x){const target=$('bookTarget').value==='origin'?'origin':'destination';$(target).value=x.destination;$(target).dispatchEvent(new Event('input',{bubbles:true}));calc();scheduleAutomaticRoute()}};
 $('remove').onclick=()=>{const i=$('book').value;if(i===''||!confirm('Bestemming verwijderen?'))return;const b=getBook();b.splice(Number(i),1);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender()};
 $('print').onclick=()=>window.print();
-$('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');clearAppliedTariff();localStorage.removeItem('volvo-planner-chosen-charger-v1');location.reload()};
+$('reset').onclick=()=>{
+ if(!confirm('Invoer herstellen? Je adresboek, Google Maps-sleutel en browsertoestemming blijven behouden.'))return;
+ rideController.stop('Invoer hersteld. Start de ritstand opnieuw vóór vertrek.');
+ if(activeSpeech){const rec=activeSpeech;activeSpeech=null;rec.onresult=null;try{rec.abort?rec.abort():rec.stop()}catch(e){}}
+ for(const id of ['voiceOrigin','voiceDestination']){const button=$(id);button.speechRecognition=null;button.classList.remove('listening');button.textContent='🎤'}
+ clearAppliedTariff();chosenCharger=null;chargerChoiceControls=[];
+ try{localStorage.removeItem('volvo-planner-input-v2');localStorage.removeItem('volvo-planner-chosen-charger-v1')}catch(e){}
+ for(const id of fields)$(id).value=initialInput[id];
+ for(const id of ['origin','destination']){delete addressSessions[id];const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');if(query)query.value='';if(choices)choices.replaceChildren();addressMessage(id,'')}
+ $('chargers').replaceChildren();$('unknownChargers').replaceChildren();$('rideResults').replaceChildren();clearAlternative();
+ updateManualCapacity();checkRangeWarning();updateRouteTotal();calc();updateChosenCharger();
+ chargeMessage('Invoer hersteld. Zoek opnieuw laadpalen bij je bestemming.');
+ status('Invoer hersteld. Google Maps blijft verbonden als de verbinding al actief was. Je kunt opnieuw typen of op 🎤 tikken.',true);
+};
 for(const id of ['publicPrice','startFee'])$(id).addEventListener('input',clearAppliedTariff);
 for(const id of fields){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);}
 for(const id of ['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee'])$(id).addEventListener('change',()=>{$('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('Instellingen gewijzigd: klik opnieuw op Zoek / ververs laadpalen om prijzen te herberekenen.');});
