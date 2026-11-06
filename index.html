@@ -2,6 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Volvo Reisplanner</title>
 <style>
@@ -29,44 +30,52 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 .charger a{display:inline-block;padding:8px 12px;background:#e5edf2;border-radius:8px;text-decoration:none;font-weight:650}
 .badge{display:inline-block;padding:4px 8px;border-radius:6px;background:#e5edf2;font-size:.75rem;margin:3px 5px 3px 0}
 .hidden{display:none!important}a{color:#125577}small{font-size:.78rem}
-.tabbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#102d43;padding:8px max(8px,calc((100vw - 790px)/2));box-shadow:0 3px 8px #0002}
+.tabbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;background:#102d43;padding:8px max(8px,calc((100vw - 790px)/2));box-shadow:0 3px 8px #0002}
 .tabbar button{font-size:.87rem;padding:11px 2px;background:#27465a;border-radius:8px}.tabbar button.active{background:#fff;color:#102d43}
 .view[hidden]{display:none!important}details.info{border-top:1px solid #e1e8ec;margin-top:9px;padding-top:9px}details.info summary{cursor:pointer;font-weight:650;color:#125577;padding:8px 0}
-.charger .mini-line{margin:7px 0;font-size:.91rem}.charger .price-main{font-size:1.35rem;font-weight:800;color:#12643f;margin:7px 0}.charger .navlinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.charger .navlinks a{font-size:.85rem;flex:1;text-align:center;white-space:nowrap;padding:10px 6px}
+.charger a.button{display:block;background:#125577;color:white;text-decoration:none;text-align:center;border-radius:10px;padding:16px;font-weight:700}.charger .mini-line{margin:7px 0;font-size:.91rem}.charger .price-main{font-size:1.35rem;font-weight:800;color:#12643f;margin:7px 0}.charger .navlinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.charger .navlinks a{font-size:.85rem;flex:1;text-align:center;white-space:nowrap;padding:10px 6px}
 .charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}.address-entry{display:flex;gap:7px;align-items:center}.address-entry{min-width:0;width:100%}.address-entry input{flex:1 1 0;min-width:0;width:0}.voice-btn{flex:0 0 44px;width:44px;padding:11px 0;display:inline-flex;align-items:center;justify-content:center}.maps-search{width:100%;min-width:0;overflow:visible}gmp-place-autocomplete{max-width:100%;min-width:0}.voice-btn.listening{background:#a03535}.voice-choices{display:grid;gap:5px;margin:5px 0}.address-option{text-align:left;font-size:.84rem;padding:9px 11px;white-space:normal}
 @media(max-width:430px){.grid{grid-template-columns:1fr}.card{padding:14px}header{padding:13px 12px}header h1{font-size:1.3rem}header p{display:none}main{padding:10px 9px 85px}.tabbar{position:fixed;top:auto;bottom:0;left:0;right:0;padding:7px 8px max(7px,env(safe-area-inset-bottom));}.tabbar button{font-size:.82rem;padding:11px 0}.charger{padding:11px}.charger h3{font-size:.96rem}}
+@media print{.view[hidden]{display:block!important}.tabbar,.actions,.maps-search,.voice-btn{display:none!important}details{display:block}.card{box-shadow:none;break-inside:avoid}body{background:white}}
+input:invalid{border-color:#ac4338}button:focus-visible,a:focus-visible{outline:3px solid #dba529;outline-offset:3px}
+/* Google's documented prediction-list part: keep the list scrollable on Mac. */
+gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!important;overflow-y:auto!important;overscroll-behavior-y:contain;scrollbar-gutter:stable;pointer-events:auto}
+.voice-choices{max-height:180px;touch-action:pan-y;-webkit-overflow-scrolling:touch;overflow-y:auto;overscroll-behavior-y:auto;scrollbar-gutter:stable;display:flex;flex-direction:column}
+.voice-choices .address-option{flex-shrink:0;min-height:44px}
+.charger.chosen{border:2px solid #167247;background:#f0faf4}.charger-choice[aria-pressed="true"]{background:#17633f}
+.contacts-preview{max-height:320px;overflow-y:auto}.contact-preview{display:flex;gap:10px;align-items:flex-start;padding:10px;border-bottom:1px solid #d6e1e7}.contact-preview input{width:20px;flex:none;margin-top:4px}.contact-preview label{font-weight:400;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
 <header><div><h1>🚙 Volvo Reisplanner</h1><p>Afstand • elektrische kilometers • kosten • Type 2-laadpalen</p></div></header>
-<nav class="tabbar" aria-label="Schermen"><button type="button" data-tab="route" class="active">🚗 Route</button><button type="button" data-tab="laden">⚡ Laden</button><button type="button" data-tab="kosten">💶 Kosten</button><button type="button" data-tab="meer">⚙️ Meer</button></nav>
+<nav class="tabbar" aria-label="Schermen"><button type="button" data-tab="route" class="active">🚗 Route</button><button type="button" data-tab="ritstand">🔊 Ritstand</button><button type="button" data-tab="alternatief">📍 Andere paal</button><button type="button" data-tab="laden">⚡ Laden</button><button type="button" data-tab="kosten">💶 Kosten</button><button type="button" data-tab="meer">⚙️ Meer</button></nav>
 <main>
-<div class="view" data-view="route"><section class="card"><h2>Route</h2><div class="grid">
+<div class="view" data-view="ritstand" hidden><section class="card"><h2>Ritstand — beschikbaarheid van mijn laadpaal</h2><p class="muted">Kies eerst onder Laden een laadpaal met <b>Dit is mijn keuze</b>. Start daarna vóór vertrek deze ritstand. Rond 2 km <b>rijafstand naar die laadpaal</b> controleert de planner de NDW-beschikbaarheid en spreekt uit: vrij gemeld, niet vrij gemeld of niet te bevestigen. Een gewijzigde status kan vóór aankomst opnieuw worden gemeld.</p><p id="rideTarget" class="status" role="status">Nog geen laadpaal gekozen.</p><div class="actions"><button id="rideStart" type="button">▶ Start aankomstmelding vóór vertrek</button><button id="rideStop" type="button" class="secondary" disabled>■ Stop ritstand</button><button id="rideSound" type="button" class="secondary">Test gesproken melding</button></div><p id="rideStatus" class="status" role="status">Ritstand uit. Geen locatievolging actief.</p><p class="muted">Dit controleert uitsluitend jouw gekozen laadlocatie; het laadadvies blijft onder Kosten. NDW telt vrije AC Type 2-aansluitingen per locatie en bevestigt niet welke aansluiting vrij is. Bij ontbrekende gegevens, een verbindingsfout of een status ouder dan 15 minuten volgt geen onbevestigd ja/nee. De melding reserveert geen plek.</p><p class="muted">Werkt alleen met deze pagina zichtbaar en de telefoon ontgrendeld. De planner probeert het scherm wakker te houden. Je locatie wordt voor rijafstand met Google gedeeld; NDW krijgt een gebiedsvraag rond de gekozen laadpaal. Er wordt geen GPS-ritgeschiedenis bewaard. Voor de iPhone is een bereikbare HTTPS-versie nodig; het lokale Mac-adres werkt daar niet.</p><div id="rideResults"></div></section></div><div class="view" data-view="route"><section class="card"><h2>Route</h2><div class="grid">
 <div class="wide"><label for="origin">Vertrekadres</label><div class="address-entry"><input id="origin" value="Waterjufferstraat 4, Beekbergen" autocomplete="street-address" enterkeyhint="done"><button type="button" id="voiceOrigin" class="secondary voice-btn" aria-label="Vertrekadres dicteren">🎤</button></div></div>
 <div class="wide"><label for="destination">Bestemming (adres)</label><div class="address-entry"><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort" enterkeyhint="done"><button type="button" id="voiceDestination" class="secondary voice-btn" aria-label="Bestemming dicteren">🎤</button></div></div>
-<div><label for="outkm">Heenreis (km)</label><input id="outkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
-<div><label for="backkm">Terugreis (km)</label><input id="backkm" type="number" min="0" step="0.1" placeholder="Via Google Maps"></div>
-<div class="wide"><small class="muted">🎤 Dicteren vult eerst het Google Maps-zoekveld. Kies daarna het juiste adres uit de resultaten. Heen- en terugafstand worden automatisch berekend.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
+<div><label for="outkm">Heenreis (km)</label><input id="outkm" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.1" placeholder="Via Google Maps"></div>
+<div><label for="backkm">Terugreis (km)</label><input id="backkm" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.1" placeholder="Via Google Maps"></div>
+<div class="wide"><small class="muted">🎤 Dicteren vult eerst het Google Maps-zoekveld. Kies daarna het juiste adres uit de gewone resultatenlijst. Op de Mac: start via Start Volvo Reisplanner.command. Zet in Chrome bij Site-instellingen de microfoon één keer op Toestaan. De microfoon wordt alleen actief wanneer je op 🎤 klikt.</small></div><div class="wide"><strong id="routeTotal">Totaal heen en terug: — km</strong> <small class="muted">· beide afstanden zijn handmatig aanpasbaar</small></div><div class="wide"><label for="season">Elektrisch bereik Volvo XC60</label><select id="season">
 <option value="winter">❄️ Winter – maximaal 61 km</option><option value="summer">☀️ Zomer – maximaal 81 km</option>
 <option value="manual">✏️ Handmatig instellen</option></select></div>
-<div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="number" min="1" max="1000" value="70"></div>
-<div><label for="range">Elektrisch bereik bij vertrek (km)</label><input id="range" type="number" min="0" max="1000" value="40"></div>
-<div><label for="rangeAfter">Extra elektrisch bereik na laden op bestemming (km)</label><input id="rangeAfter" type="number" min="0" max="1000" value="0"></div>
+<div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" max="1000" value="70"></div>
+<div><label for="range">Elektrisch bereik bij vertrek (km)</label><input id="range" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1000" value="40"></div>
+<div><label for="rangeAfter">Extra elektrisch bereik na laden op bestemming (km)</label><input id="rangeAfter" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1000" value="0"></div>
 </div><div id="rangeWarning" class="status hidden" role="status"></div>
-<div class="actions"><button id="routeBtn">Bereken afstand met Google Maps</button><button id="mapsBtn" class="secondary">Open bestemming in Google Maps ↗</button></div>
+<div class="actions"><button id="routeBtn">Bereken afstand met Google Maps</button><button id="mapsBtn" class="secondary">Open bestemming in Google Maps ↗</button><button id="returnMaps" class="secondary">Terugroute in Google Maps ↗</button><button id="shareDestination" class="secondary">Bestemming delen / kopiëren</button></div>
 <div id="routeStatus" class="status">Automatische afstand vereist een Google Maps API-sleutel. Zonder sleutel kun je de kilometers handmatig invullen.</div>
 <p class="muted">Vul het actuele elektrische bereik van je Volvo in. Extra bereik na laden is het aantal extra kilometers dat je op de bestemming verwacht bij te laden.</p>
 </section>
-</div><div class="view" data-view="meer" hidden><section class="card"><h2>Adresboek</h2><div class="grid"><div class="wide"><label for="book">Opgeslagen bestemmingen</label><select id="book"><option value="">Kies een bestemming…</option></select></div></div>
+</div><div class="view" data-view="meer" hidden><section class="card"><h2>Adresboek en contacten</h2><p class="muted">Importeer gekozen Apple-contacten als vCard (.vcf). Alleen namen en postadressen komen lokaal in dit adresboek; geen telefoonnummers, e-mail, notities of foto's. Er is geen automatische synchronisatie met Apple Contacten. Adressen gaan pas naar Google wanneer je ze als vertrek of bestemming gebruikt en een route/adres laat berekenen.</p><div class="grid"><div class="wide"><label for="bookTarget">Gekozen adres gebruiken als</label><select id="bookTarget"><option value="destination">Bestemming</option><option value="origin">Vertrekadres</option></select></div><div class="wide"><label for="bookFilter">Zoek op naam of adres</label><input id="bookFilter" type="search" placeholder="Naam, straat of plaats"></div><div class="wide"><label for="book">Opgeslagen adressen en contacten</label><select id="book"><option value="">Kies een bestemming…</option></select></div></div>
 <div class="actions"><button id="save" class="secondary">Bestemming bewaren</button><button id="remove" class="secondary">Verwijderen</button></div>
-<p class="muted">Het adresboek wordt lokaal in deze browser opgeslagen en synchroniseert niet automatisch.</p></section>
+<div class="grid"><div class="wide"><label for="contactsFile">Apple-contactenbestand kiezen (.vcf)</label><input id="contactsFile" type="file" accept=".vcf,.vcard,text/vcard,text/x-vcard"></div></div><div class="actions"><button id="contactsDevice" class="secondary" type="button">Contacten kiezen op apparaat</button></div><p id="contactsStatus" class="muted" role="status">Selecteer een contactenbestand om eerst een voorbeeld te bekijken.</p><div id="contactsPreview" class="contacts-preview"></div><div class="actions"><button id="contactsImport" type="button" disabled>Geselecteerde contacten bewaren</button><button id="contactsCancel" class="secondary" type="button" disabled>Voorbeeld sluiten</button></div><details class="info"><summary>Apple Contacten exporteren</summary><p class="muted">Mac: open Contacten, selecteer de gewenste personen en kies Archief → Exporteer → Exporteer vCard. Kies dat .vcf-bestand hierboven. Bewaar het bestand op je eigen apparaat; je hoeft het niet in deze chat te delen. Op de iPhone kun je via Contacten een contact delen als vCard of via iCloud.com geselecteerde contacten exporteren.</p></details><p id="microphoneStatus" class="muted" role="status">Microfoon: klik op 🎤 bij vertrek of bestemming om te dicteren.</p><p class="muted">Voor blijvende microfoontoegang: klik in Chrome links van het webadres op Sitegegevens → Site-instellingen → Microfoon → Toestaan. Kies bij een vraag Toestaan tijdens bezoek aan de site, niet Deze keer toestaan. De browser beheert dit per website; de planner kan het niet afdwingen. Hij luistert alleen na een klik op 🎤.</p><p class="muted">Het adresboek wordt lokaal in deze browser opgeslagen en synchroniseert niet automatisch tussen Mac en iPhone.</p></section>
 </div><div class="view" data-view="kosten" hidden><section class="card"><h2>Kostenberekening</h2><div class="grid">
-<div><label for="homePrice">Thuisstroom €/kWh</label><input id="homePrice" type="number" min="0" step="0.001" value="0.26836"></div>
-<div><label for="petrolPrice">Benzine €/liter</label><input id="petrolPrice" type="number" min="0" step="0.001" value="2.159"></div>
-<div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="number" min="1" step="0.1" value="25"></div>
-<div><label for="fuelUse">Benzine liter/100 km</label><input id="fuelUse" type="number" min="1" step="0.1" value="8"></div>
-<div><label for="publicPrice">Openbaar tarief €/kWh</label><input id="publicPrice" type="number" min="0" step="0.001" value="0.555"></div>
-<div><label for="startFee">Start-/extra kosten (€)</label><input id="startFee" type="number" min="0" step="0.01" value="0"></div>
+<div><label for="homePrice">Thuisstroom €/kWh</label><input id="homePrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.26836"></div>
+<div><label for="petrolPrice">Benzine €/liter</label><input id="petrolPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="2.159"></div>
+<div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="25"></div>
+<div><label for="fuelUse">Benzine liter/100 km</label><input id="fuelUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="8"></div>
+<div><label for="publicPrice">Openbaar tarief €/kWh</label><input id="publicPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.555"></div>
+<div><label for="startFee">Start-/extra kosten (€)</label><input id="startFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div>
 </div>
 <div class="row"><span>Totale afstand</span><strong id="totalKm">—</strong></div>
 <div class="row"><span>Elektrisch uit thuisaccu</span><strong id="homeKm">—</strong></div>
@@ -76,16 +85,16 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 <div class="row"><span>Openbaar laden</span><strong id="chargeCost">—</strong></div>
 <div class="row"><span>Benzine</span><strong id="petrolCost">—</strong></div>
 <div class="row"><span><b>Geschatte totale ritkosten</b></span><strong class="total" id="totalCost">—</strong></div>
-<p class="muted">Vereenvoudigde kostenraming; werkelijke hybride aandrijving kan afwijken. Niet-verbruikte geladen energie is niet meegerekend.</p>
+<div class="grid"><div class="wide"><label for="sessionMode">Welke laadkosten tellen mee?</label><select id="sessionMode"><option value="used">Alleen stroom die je tijdens deze rit verbruikt</option><option value="full">Alles wat je bij de laadpaal betaalt (aanbevolen)</option></select></div></div><div id="chargingAdvice" class="status" role="status" aria-live="polite"></div><p class="muted">Laadadvies vergelijkt dezelfde rit zonder bijladen met de volledige laadsessie uit Laden. Alleen benzine die je tijdens deze rit bespaart telt mee; resterende geladen energie krijgt hier geen waarde. Start-/extra kosten uit Kosten tellen mee, inclusief overgenomen NDW-tijdkosten. Onbekende Shuttel- en parkeerkosten kunnen het advies veranderen.</p><p id="tariffSummary" class="muted"></p><p id="sessionSummary" class="muted"></p><p class="muted">Vereenvoudigde kostenraming; werkelijke hybride aandrijving kan afwijken. De gekozen kostenmethode bepaalt of niet-verbruikte geladen energie wordt meegerekend.</p>
 </section>
-</div><div class="view" data-view="laden" hidden><section class="card"><h2>Laadpalen bij bestemming</h2>
-<div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="number" min="0.1" max="200" step="0.5" value="10"></div></div><details class="info"><summary>⚙️ Laadduur, btw en bijkomende kosten</summary><div class="grid"><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="number" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale parkeertijd (minuten)</label><input id="parkingMinutes" type="number" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="number" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="number" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten (€)</label><input id="parkingFee" type="number" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur.</p></details>
-<div class="actions"><button id="refresh">🔄 Actuele beschikbaarheid</button></div>
+</div><div class="view" data-view="alternatief" hidden><section class="card"><h2>Andere laadpaal</h2><p id="alternativeStatus" class="status" role="status">Als jouw gekozen laadpaal rond aankomst bezet wordt gemeld, zoek ik hier één vrije andere laadlocatie.</p><div id="alternativeResult"></div><p class="muted">Open de nieuwe laadpaal in Google Maps op je iPhone. Gebruik daar Naar auto sturen als die optie beschikbaar is. De planner kan ontvangst in de Volvo niet bevestigen. Bedien dit alleen wanneer je stilstaat of laat een passagier helpen. Vrij gemeld is geen reservering.</p></section></div><div class="view" data-view="laden" hidden><section class="card"><h2>Laadpalen bij bestemming</h2><p id="chosenChargerSummary" class="status hidden" role="status"></p>
+<div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0.1" max="200" step="0.5" value="10"></div></div><details class="info"><summary>⚙️ Laadduur, btw en bijkomende kosten</summary><div class="grid"><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale aangesloten tijd incl. laden (minuten)</label><input id="parkingMinutes" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten (€)</label><input id="parkingFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur. PARKING_TIME geldt alleen voor aangesloten tijd zonder laden (totale aangesloten tijd min laadduur).</p></details>
+<div class="actions"><button id="refresh">🔄 Zoek / ververs laadpalen</button></div>
 <div id="dataFreshness" class="status" role="status">Nog niet gecontroleerd. Rechtstreekse NDW-status wordt geprobeerd; bij een verbindingsfout verschijnt een waarschuwing.</div>
 <p class="muted">Voor vertrek: controle op NDW-status, ouderdom en je eigen meldingen. Fysieke aanwezigheid kan niet automatisch worden bevestigd.</p>
-<div id="chargeStatus" class="status" role="status">Verbind Google Maps in onderdeel 5 en zoek laadpalen.</div>
-<div id="chargers"></div>
-<details class="info"><summary>ℹ️ Over de laadpaalgegevens</summary><p class="muted">Volgorde: laagste berekenbare totale NDW-laadkosten, bij gelijke prijs kortste loopafstand. Alleen bevestigde looproutes van maximaal 500 m. Maximaal drie resultaten. Onbekende of tijdsafhankelijke tarieven staan onder berekenbare prijzen. NDW is geen garantie voor Shuttel-acceptatie of Shuttel-eindprijs; btw, beschikbaarheid bij aankomst en gemeentelijke parkeerkosten zijn niet bevestigd.</p></details>
+<div id="chargeStatus" class="status" role="status">Verbind Google Maps onder Meer en zoek laadpalen.</div>
+<p class="status">Shuttel-acceptatie en Shuttel-eindprijzen zijn niet geverifieerd. Gemeentelijk parkeergeld is niet geverifieerd. Onbekende kosten zijn geen bevestiging van gratis laden of parkeren.</p><div id="chargers"></div><div id="unknownChargers"></div>
+<details class="info"><summary>ℹ️ Over de laadpaalgegevens</summary><p class="muted">Volgorde: laagste berekenbare totale NDW-laadkosten, bij gelijke prijs kortste loopafstand. Alleen bevestigde looproutes van maximaal 500 m. Top 3 op berekenbare sessieprijs; overige locaties met onbekende of complexe tarieven staan apart en kunnen goedkoper zijn. NDW is geen garantie voor Shuttel-acceptatie of Shuttel-eindprijs; btw, beschikbaarheid bij aankomst en gemeentelijke parkeerkosten zijn niet bevestigd.</p></details>
 </section>
 </div><div class="view" data-view="meer" hidden><section class="card"><h2>Google Maps instellen</h2><div class="grid"><div class="wide"><label for="apiKey">Google Maps API-sleutel</label><input id="apiKey" type="password" placeholder="Plak hier op je eigen apparaat de sleutel" autocomplete="off"></div></div>
 <div class="actions"><button id="connect">Google Maps verbinden</button><button id="clearKey" class="secondary">Sleutel wissen</button></div>
@@ -93,8 +102,11 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 <p class="muted">Voor automatisch routes berekenen zijn Google Maps JavaScript API, Routes en Places nodig. Beperk je browsersleutel op website en toegestane API's. De sleutel wordt alleen lokaal opgeslagen en niet in GitHub gepubliceerd.</p>
 </section>
 <div class="actions"><button id="print" class="secondary">Afdrukken / PDF</button><button id="reset" class="secondary">Invoer herstellen</button></div>
-<p class="muted">Naar de Volvo sturen: open de bestemming op je iPhone in Google Maps en gebruik ‘Naar navigatie sturen’.</p>
+<details class="info"><summary>Bestemming naar je Volvo</summary><p class="muted">Open de bestemming in Google Maps op je telefoon. Bij een ondersteunde auto en account kan ‘Naar auto sturen’ beschikbaar zijn. De reisplanner kan ontvangst door de auto niet bevestigen. Bij Sensus Navigation kun je de bestemming in de Volvo Cars-app zoeken en ‘Send to car’ gebruiken. Beschikbaarheid hangt af van model, software en diensten. Gebruik Delen/kopiëren om het adres over te nemen.</p><a href="https://www.volvocars.com/uk/support/topic/c7bac0678accca8bc0a80151259ca619/" target="_blank" rel="noopener noreferrer">Volvo-instructies</a></details>
 </div></main>
+<script src="planner-core.js"></script>
+<script src="ride-mode.js"></script>
+<script src="contacts-book.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -106,12 +118,39 @@ const $=id=>document.getElementById(id);
  }
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 
-const fields=['origin','destination','outkm','backkm','season','manualCapacity','range','rangeAfter','homePrice','petrolPrice','elecUse','fuelUse','publicPrice','startFee'];
+const fields=['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee','sessionMode','origin','destination','outkm','backkm','season','manualCapacity','range','rangeAfter','homePrice','petrolPrice','elecUse','fuelUse','publicPrice','startFee'];
 const money=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n);
 const fmt=n=>new Intl.NumberFormat('nl-NL',{maximumFractionDigits:1}).format(n);
-const n=id=>{const x=Number($(id).value);return Number.isFinite(x)&&x>=0?x:0};
+const n=id=>PlannerCore.number($(id).value);
 let mapsReady=false,routeClass=null,mapsLoadPromise=null,widgets=[];
 const mapsKeyName='volvo-planner-key-v2';
+let appliedTariff=null;try{appliedTariff=JSON.parse(localStorage.getItem('volvo-planner-tariff-v1')||'null')}catch(e){}
+let chosenCharger=null,chargerChoiceControls=[];
+let alternativeVersion=0,alternativeFor=null;
+function clearAlternative(){alternativeVersion++;alternativeFor=null;$('alternativeResult').replaceChildren();$('alternativeStatus').textContent='Nog geen andere laadpaal nodig of gevonden.'}
+try{chosenCharger=JSON.parse(localStorage.getItem('volvo-planner-chosen-charger-v1')||'null')}catch(e){}
+function updateChosenCharger(){
+ const target=RideMode.targetFromChoice(chosenCharger,$('destination').value.trim());$('rideTarget').textContent=target?'Aankomstmelding voor: '+target.name:'Kies eerst onder Laden een laadpaal voor je huidige bestemming.';
+ const summary=$('chosenChargerSummary');summary.classList.toggle('hidden',!chosenCharger);
+ if(!chosenCharger)return;
+ const same=chosenCharger.destination===$('destination').value.trim();
+ summary.textContent=(same?'Mijn keuze: ':'Vorige keuze bij een andere bestemming: ')+chosenCharger.name+'. '+(same?(chosenCharger.priced?'Tarief gekoppeld aan de ritkosten.':'Tarief onbekend; vul de openbare kosten handmatig in.'):'Zoek laadpalen voor je huidige bestemming.');
+ for(const item of chargerChoiceControls){const selected=same&&item.key===chosenCharger.key;item.card.classList.toggle('chosen',selected);item.button.textContent=selected?'✓ Dit is mijn keuze':'Dit is mijn keuze';item.button.setAttribute('aria-pressed',String(selected))}
+}
+function useChargerTariff(x){
+ appliedTariff={key:x.tariff.tariffKey,definition:x.tariffDefinitions[x.tariff.tariffKey],savedAt:new Date().toISOString()};
+ try{localStorage.setItem('volvo-planner-tariff-v1',JSON.stringify(appliedTariff))}catch(e){}
+ $('sessionMode').value='full';
+}
+function chooseCharger(x){
+ clearAlternative();
+ if(rideController.isActive())rideController.stop('Laadpaalkeuze gewijzigd. Start de aankomstmelding opnieuw wanneer je stilstaat.');
+ chosenCharger={key:reportKey(x),name:[x.p.adres||x.p.naam||'Laadlocatie',x.p.plaats].filter(Boolean).join(', '),destination:$('destination').value.trim(),priced:!!x.tariff,coords:x.coords};
+ try{localStorage.setItem('volvo-planner-chosen-charger-v1',JSON.stringify(chosenCharger))}catch(e){}
+ if(x.tariff)useChargerTariff(x);else{clearAppliedTariff();$('publicPrice').value='';$('startFee').value='';$('sessionMode').value='full'}
+ calc();updateChosenCharger();
+}
+function clearAppliedTariff(){appliedTariff=null;try{localStorage.removeItem('volvo-planner-tariff-v1')}catch(e){}}
 function status(message,ok=false){$('routeStatus').textContent=message;$('routeStatus').className='status'+(ok?' success':'')}
 // Dicteren via de browser waar Web Speech beschikbaar is; iOS-toetsenbord blijft fallback.
 let activeSpeech=null;
@@ -119,21 +158,41 @@ function setupDictation(id,buttonId){
  const button=$(buttonId),input=$(id);
  button.addEventListener('click',()=>{
   const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!Recognition){input.focus();status('Gebruik de microfoon op het iPhone-toetsenbord om het adres te dicteren. Controleer daarna het adres.');return}
-  if(activeSpeech){try{activeSpeech.stop()}catch(e){} activeSpeech=null}
-  const rec=new Recognition();activeSpeech=rec;rec.lang='nl-NL';rec.interimResults=false;rec.maxAlternatives=1;
-  button.classList.add('listening');button.textContent='⏹';status('Luisteren… spreek het adres in.');
+  if(!Recognition){input.focus();status('Typ het adres, of gebruik de dicteerfunctie van je Mac/iPhone. Controleer daarna het adres.');return}
+  if(activeSpeech){const same=activeSpeech===button.speechRecognition;try{activeSpeech.stop()}catch(e){}activeSpeech=null;if(same)return}
+  const rec=button.speechRecognition||(button.speechRecognition=new Recognition());activeSpeech=rec;rec.lang='nl-NL';rec.interimResults=false;rec.maxAlternatives=1;
+  button.classList.add('listening');button.textContent='⏹';status('Luisteren… spreek het adres in.');addressMessage(id,'Microfoon gestart. Spreek straat, huisnummer en plaats in.');
   rec.onresult=async e=>{
    const phrase=e.results?.[0]?.[0]?.transcript?.trim();
    if(!phrase)return;
    await searchSpokenAddress(id,phrase);
   };
-  rec.onerror=e=>status('Dicteren niet beschikbaar ('+e.error+'). Gebruik eventueel de microfoon op het toetsenbord.');
+  rec.onerror=e=>{const message=e.error==='not-allowed'?'Microfoon: toegang geweigerd. Controleer de microfoonrechten van deze site én Chrome in de Mac-instellingen.':e.error==='network'?'Microfoon: de spraakdienst is niet bereikbaar (network). De microfoontoestemming alleen verhelpt dit niet; typ het adres om verder te gaan.':e.error==='no-speech'?'Microfoon: geen spraak gehoord. Controleer de gekozen microfoon in Chrome en spreek opnieuw.':'Dicteren niet beschikbaar ('+e.error+'). Je kunt het adres ook typen.';addressMessage(id,message);status(message)};
   rec.onend=()=>{button.classList.remove('listening');button.textContent='🎤';if(activeSpeech===rec)activeSpeech=null};
   try{rec.start()}catch(e){status('Dicteren kon niet starten. Gebruik de microfoon op het toetsenbord.')}
  });
 }
+// Accepteer zowel Googles callback- als Promise-interface; nooit undefined uitlezen.
+function geocodeAddress(address){
+ return new Promise((resolve,reject)=>{
+  let settled=false;
+  const finish=(error,results)=>{if(settled)return;settled=true;clearTimeout(timer);if(error)reject(error);else resolve({results})};
+  const timer=setTimeout(()=>finish(Error('Google Geocoding reageert niet. Controleer de verbinding.')),15000);
+  try{
+   const pending=new google.maps.Geocoder().geocode({address,region:'NL'},(results,code)=>{
+    if(code==='OK'&&Array.isArray(results))finish(null,results);
+    else {
+     const detail=code==='REQUEST_DENIED'?' Controleer Geocoding API en de websitebeperking voor http://127.0.0.1:8788/.':code==='ZERO_RESULTS'?' Geen adres gevonden; voeg huisnummer en plaats toe.':'';
+     finish(Error('Google Geocoding: '+(code||'onbekend antwoord')+'.'+detail));
+    }
+   });
+   if(pending&&typeof pending.then==='function')pending.then(response=>{if(Array.isArray(response?.results))finish(null,response.results)},error=>finish(error));
+  }catch(error){finish(error)}
+ });
+}
+function addressMessage(id,message,ok=false){const box=$(id+'SearchStatus');if(box){box.textContent=message;box.className='status'+(ok?' success':'')}}
 // Spraak gaat eerst naar het Google Maps-ZOEKveld, nooit direct naar het definitieve adres.
+const addressSessions={};
 async function searchSpokenAddress(id,phrase){
  const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');
  if(!query||!choices){status('Google Maps-zoekveld nog niet geladen. Controleer de Maps-verbinding.');return}
@@ -141,36 +200,61 @@ async function searchSpokenAddress(id,phrase){
  status('Google Maps zoekt naar: '+phrase+'…');
  try{
   await loadMaps();
-  const response=await new google.maps.Geocoder().geocode({address:phrase,region:'NL'});
-  const results=(response.results||[]).slice(0,5);
+  addressMessage(id,'Google Maps zoekt…');
+  let results=[];
+  const places=await google.maps.importLibrary('places');
+  if(places.AutocompleteSuggestion&&places.AutocompleteSessionToken){
+   const session=addressSessions[id]||(addressSessions[id]=new places.AutocompleteSessionToken());
+   try{const response=await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({input:phrase,language:'nl',region:'nl',sessionToken:session});results=(response.suggestions||[]).filter(s=>s.placePrediction).map(s=>({formatted_address:s.placePrediction.text.toString(),prediction:s.placePrediction}));}catch(e){results=[]}
+  }
+  if(!results.length){const response=await geocodeAddress(phrase);results=(response.results||[]).slice(0,10);}
+  if(query.value.trim()!==phrase.trim())return;
   if(!results.length)throw Error('Geen adres gevonden');
-  const caption=document.createElement('small');caption.className='muted';caption.textContent='Kies het juiste Google Maps-adres:';choices.append(caption);
+  const caption=document.createElement('small');caption.className='muted';caption.textContent='Kies het juiste Google Maps-adres. Staat het er niet bij? Typ ook huisnummer en plaats:';choices.append(caption);
   for(const item of results){
    const option=document.createElement('button');option.type='button';option.className='secondary address-option';option.textContent='📍 '+item.formatted_address;
-   option.addEventListener('click',()=>{
-    $(id).value=item.formatted_address;
-    query.value=item.formatted_address;
+   option.addEventListener('click',async()=>{
+    try{
+    if(query.value.trim()!==phrase.trim())return;
+    let address=item.formatted_address;
+    if(item.prediction){const place=item.prediction.toPlace();await place.fetchFields({fields:['formattedAddress','displayName']});if(query.value.trim()!==phrase.trim())return;address=place.formattedAddress||place.displayName||address;delete addressSessions[id]}
+    $(id).value=address;
+    query.value=address;
     choices.replaceChildren();
     $(id).dispatchEvent(new Event('change',{bubbles:true}));
     calc();scheduleAutomaticRoute();
-    status((id==='origin'?'Vertrekadres':'Bestemming')+' via Google Maps gekozen: '+item.formatted_address,true);
+    status((id==='origin'?'Vertrekadres':'Bestemming')+' via Google Maps gekozen: '+address,true);
+    }catch(e){addressMessage(id,'Adres selecteren mislukt. Probeer Zoek adres opnieuw.')}
    });
    choices.append(option);
   }
+  const attribution=document.createElement('small');attribution.textContent='Google Maps';choices.append(attribution);
+  addressMessage(id,'Kies hieronder het juiste adres. Veeg of scroll binnen de lijst voor meer resultaten.',true);
   status('Selecteer het juiste adres uit de Google Maps-resultaten.');
- }catch(err){status('Google Maps zoeken mislukt: '+err.message+'. Probeer een andere zoekopdracht.');}
+ }catch(err){if(query.value.trim()!==phrase.trim())return;const message='Google Maps zoeken mislukt: '+String(err.message||err).replace(/AIza[0-9A-Za-z_-]+/g,'[sleutel verborgen]');addressMessage(id,message);status(message);}
 }
 setupDictation('origin','voiceOrigin');setupDictation('destination','voiceDestination');
-function updateRouteTotal(){const out=Number($('outkm').value),back=Number($('backkm').value);$('routeTotal').textContent='Totaal heen en terug: '+(Number.isFinite(out)&&Number.isFinite(back)&&$('outkm').value!==''&&$('backkm').value!==''?fmt(out+back)+' km':'— km')}
+function updateRouteTotal(){const out=n('outkm'),back=n('backkm');$('routeTotal').textContent='Totaal heen en terug: '+(Number.isFinite(out)&&Number.isFinite(back)&&$('outkm').value!==''&&$('backkm').value!==''?fmt(out+back)+' km':'— km')}
 ['outkm','backkm'].forEach(id=>$(id).addEventListener('input',updateRouteTotal));
 
+function invalidNumbers(){return fields.filter(id=>$(id).getAttribute('inputmode')==='decimal'&&$(id).value!==''&&!/^(?:[0-9]+(?:[.,][0-9]*)?|[.,][0-9]+)$/.test($(id).value.trim()))}
 function calc(){
- const out=n('outkm'),back=n('backkm'),cap=$('season').value==='winter'?61:$('season').value==='summer'?81:n('manualCapacity');
- const home=Math.min(out+back,n('range'),cap),homeOutbound=Math.min(out,home),remainingHome=Math.max(0,home-homeOutbound);
- const extra=Math.min(Math.max(0,back-remainingHome),n('rangeAfter'),Math.max(0,cap-remainingHome));
- const petrolKm=Math.max(0,out-homeOutbound)+Math.max(0,back-remainingHome-extra);
- const hc=home*n('elecUse')/100*n('homePrice'),cc=extra*n('elecUse')/100*n('publicPrice')+(extra>0?n('startFee'):0),pc=petrolKm*n('fuelUse')/100*n('petrolPrice');
+ updateChosenCharger();updateRouteTotal();checkRangeWarning();
+ if(appliedTariff){const price=basicPrice(appliedTariff.definition,n('chargeKwh'));if(price){$('publicPrice').value=((price.components.ENERGY?.gross||0)/n('chargeKwh')+n('shuttelMarkup')).toFixed(8);$('startFee').value=(price.flat+price.time+price.parking+n('shuttelFee')+n('parkingFee')).toFixed(8);$('tariffSummary').textContent='Gekoppeld NDW-tarief '+appliedTariff.key+'; sessievolume en tijdkosten worden opnieuw berekend. Prijsmomentopname: '+appliedTariff.savedAt+'. Ververs voor vertrek.'+(price.tariffType==='AD_HOC_PAYMENT'?' Dit is een tarief voor direct betalen; Shuttel-eindprijs niet bevestigd.':'')}else{$('tariffSummary').textContent='⚠️ Het gekoppelde tarief kan niet meer worden berekend. Zoek opnieuw of voer handmatig een tarief in.';}}else $('tariffSummary').textContent='Handmatig openbaar tarief; controleer start- en tijdkosten.';
+ const v=Object.fromEntries(fields.map(id=>[id,$(id).value]));
+ const {out,back,home,extra,petrolKm,hc,cc,pc,sessionKwh}=PlannerCore.trip(v);
+ $('sessionSummary').textContent='Bijladen voor deze rit: '+fmt(extra*n('elecUse')/100)+' kWh verbruikt. Berekende laadsessie: '+fmt(sessionKwh)+' kWh. '+($('sessionMode').value==='full'?'Volledige sessie betaald, ook als energie overblijft.':'Bestaande methode: alleen verbruikte bijlaadenergie.');
  for(const [id,val] of Object.entries({totalKm:fmt(out+back)+' km',homeKm:fmt(home)+' km',chargeKm:fmt(extra)+' km',petrolKm:fmt(petrolKm)+' km',homeCost:money(hc),chargeCost:money(cc),petrolCost:money(pc),totalCost:money(hc+cc+pc)}))$(id).textContent=val;
+ const advice=PlannerCore.chargingAdvice(v),adviceBox=$('chargingAdvice');
+ adviceBox.className='status';
+ if(advice.kind==='unknown')adviceBox.textContent='Laden of benzine? Vul de afstanden, het verbruik, de prijzen en het laadvolume in.';
+ else {
+  const headline=advice.kind==='unneeded'?'Niet laden voor deze rit: bijladen levert geen extra elektrische kilometers op.':advice.kind==='equal'?'Laden en benzine zijn voor deze rit even duur.':advice.kind==='charge'?'Laden is naar schatting '+money(advice.saving)+' voordeliger.':'Niet laden: benzine is naar schatting '+money(-advice.saving)+' voordeliger.';
+  adviceBox.textContent=headline+' Totale rit zonder bijladen: '+money(advice.withoutCharging)+'; met volledige laadsessie: '+money(advice.withCharging)+'. Je betaalt '+money(advice.sessionCost)+' voor de sessie en bespaart '+money(advice.petrolSaved)+' aan benzine ('+fmt(advice.electricKm)+' km).';
+  if(advice.kind==='charge')adviceBox.className='status success';
+ }
+ const invalid=invalidNumbers();
+ if(invalid.length||(appliedTariff&&!basicPrice(appliedTariff.definition,n('chargeKwh')))||(chosenCharger&&!chosenCharger.priced&&chosenCharger.destination===$('destination').value.trim()&&$('publicPrice').value.trim()==='')){$('chargingAdvice').textContent='Laadadvies niet berekenbaar. Controleer de invoer en het gekoppelde tarief.';$('chargingAdvice').className='status';$('totalCost').textContent='Niet berekenbaar';$('sessionSummary').textContent='Controleer de getallen, laadduur en het gekoppelde tarief.';}
  try{localStorage.setItem('volvo-planner-input-v2',JSON.stringify(Object.fromEntries(fields.map(id=>[id,$(id).value]))))}catch(e){}
 }
 function mapsLink(dest){
@@ -178,8 +262,11 @@ function mapsLink(dest){
  u.searchParams.set('api','1');u.searchParams.set('destination',dest);u.searchParams.set('travelmode','driving');
  if($('origin').value.trim())u.searchParams.set('origin',$('origin').value.trim());return u.toString();
 }
+$('returnMaps').onclick=()=>{const o=$('origin').value.trim(),d=$('destination').value.trim();if(!o||!d){status('Vul vertrek en bestemming in.');return}const u=new URL(mapsLink(o));u.searchParams.set('origin',d);window.open(u.toString(),'_blank','noopener,noreferrer')};
+$('shareDestination').onclick=async()=>{const d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(d);try{if(navigator.share)await navigator.share({title:'Bestemming Volvo',text:d,url});else {await navigator.clipboard.writeText(d+' '+url);status('Bestemming gekopieerd. Open de Volvo Cars-app en zoek of plak het adres.',true)}}catch(e){if(e.name!=='AbortError')status('Delen niet beschikbaar. Kopieer het adres: '+d)}};
 $('origin').addEventListener('change',scheduleAutomaticRoute);
 $('destination').addEventListener('change',scheduleAutomaticRoute);
+$('destination').addEventListener('input',()=>{$('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('Bestemming gewijzigd. Zoek laadpalen opnieuw.');});
 $('mapsBtn').onclick=()=>{const d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}window.open(mapsLink(d),'_blank','noopener,noreferrer')};
 function loadMaps(){
  if(window.google?.maps?.importLibrary)return Promise.resolve();
@@ -209,13 +296,21 @@ async function initMaps(){
    const existing=document.getElementById(id+'SearchBox');if(existing)existing.remove();
    const search=document.createElement('div');search.id=id+'SearchBox';search.className='maps-search';
    const label=document.createElement('span');label.className='muted';
-   label.textContent='🔎 Zoek een adres via Google Maps (selecteer een suggestie):';
+   label.textContent='🔎 Google Maps-adressuggesties — typ en kies hieronder:';
    const widget=new PlaceAutocompleteElement();
    widget.setAttribute('placeholder','🔎 Zoek '+(id==='origin'?'vertrekadres':'bestemming')+' via Google Maps');
-   const voiceQuery=document.createElement('input');voiceQuery.id=id+'VoiceSearch';voiceQuery.placeholder='🎤 Gesproken adres zoeken via Google Maps';voiceQuery.setAttribute('aria-label','Google Maps zoek'+(id==='origin'?'vertrekadres':'bestemming'));
-   voiceQuery.addEventListener('change',()=>{if(voiceQuery.value.trim())searchSpokenAddress(id,voiceQuery.value.trim())});
-   const voiceChoices=document.createElement('div');voiceChoices.id=id+'VoiceChoices';voiceChoices.className='voice-choices';
-   search.append(label,voiceQuery,voiceChoices,widget);input.closest('.address-entry').insertAdjacentElement('afterend',search);
+   const voiceQuery=document.createElement('input');voiceQuery.id=id+'VoiceSearch';voiceQuery.placeholder='Typ of dicteer een adres voor Google Maps';voiceQuery.setAttribute('aria-label','Google Maps zoek'+(id==='origin'?'vertrekadres':'bestemming'));
+   let addressTimer=null;
+   const findAddress=()=>{clearTimeout(addressTimer);if(voiceQuery.value.trim())searchSpokenAddress(id,voiceQuery.value.trim());else voiceChoices.replaceChildren()};
+   voiceQuery.addEventListener('input',()=>{clearTimeout(addressTimer);voiceChoices.replaceChildren();if(voiceQuery.value.trim().length>=4)addressTimer=setTimeout(findAddress,550)});
+   voiceQuery.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();findAddress()}});
+   const voiceChoices=document.createElement('div');voiceChoices.id=id+'VoiceChoices';voiceChoices.className='voice-choices';voiceChoices.setAttribute('role','region');voiceChoices.setAttribute('aria-label','Google Maps adresresultaten '+(id==='origin'?'vertrek':'bestemming'));voiceChoices.setAttribute('tabindex','0');
+   const fallback=document.createElement('button');fallback.id=id+'AddressSearch';fallback.type='button';fallback.className='secondary';fallback.textContent='Zoek adres';
+   fallback.addEventListener('click',()=>{clearTimeout(addressTimer);const phrase=voiceQuery.value.trim()||input.value.trim();if(!phrase){voiceQuery.focus();status('Typ eerst een adres in het zoekveld.');return}searchSpokenAddress(id,phrase)});
+   const help=document.createElement('small');help.className='muted';help.textContent='Typ in het extra zoekveld hieronder of gebruik de microfoon. De Google-resultaten verschijnen onder Zoek adres in een scrollbare lijst. Veeg op je iPhone binnen die lijst. Het ingebouwde Google-menu hierboven blijft ook beschikbaar.';
+   const searchStatus=document.createElement('p');searchStatus.id=id+'SearchStatus';searchStatus.setAttribute('role','status');
+   search.append(label,widget,voiceQuery,help,fallback,searchStatus,voiceChoices);input.closest('.address-entry').insertAdjacentElement('afterend',search);
+   widget.addEventListener('gmp-error',()=>{const message='Google Places-adressuggesties niet beschikbaar. Gebruik Zoek adres hieronder; de uitkomst verschijnt direct hier. Controleer bij weigering Places API (New) en websitebeperkingen.';addressMessage(id,message);status(message)});
    widget.addEventListener('gmp-select',async event=>{
     try{
      const prediction=event.placePrediction;
@@ -244,9 +339,9 @@ const rad=x=>x*Math.PI/180;
 function haversine(a,b){const dlat=rad(b.lat-a.lat),dlng=rad(b.lng-a.lng),x=Math.sin(dlat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dlng/2)**2;return 6371000*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
 function chargeMessage(msg,ok=false){$('chargeStatus').textContent=msg;$('chargeStatus').className='status'+(ok?' success':'')}
 async function destinationCoords(){
- if(!mapsReady)throw Error('Verbind eerst Google Maps in onderdeel 5.');
+ if(!mapsReady)throw Error('Verbind eerst Google Maps onder Meer.');
  const address=$('destination').value.trim();if(!address)throw Error('Vul eerst een bestemming in.');
- const result=await new google.maps.Geocoder().geocode({address});
+ const result=await geocodeAddress(address);
  const loc=result.results?.[0]?.geometry?.location;if(!loc)throw Error('Bestemming niet gevonden.');
  return {lat:loc.lat(),lng:loc.lng()};
 }
@@ -264,58 +359,30 @@ function historicalShuttel(p){
 }
 const ndwBase='data/laadpunten/';
 async function readJson(url){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Kan '+url+' niet ophalen (HTTP '+r.status+').');return r.json()}
-function basicPrice(tariff,kwh){
- if(!tariff||tariff.valuta!=='EUR'||!Array.isArray(tariff.prijsopbouw)||tariff.prijsopbouw.length!==1)return null;
- const now=Date.now();if(tariff.geldig_vanaf&&Date.parse(tariff.geldig_vanaf)>now)return null;
- if(tariff.geldig_tot&&Date.parse(tariff.geldig_tot)<now)return null;
- const e=tariff.prijsopbouw[0],conditions=e.voorwaarden||{};
- if(Object.keys(conditions).some(k=>!['start_date','end_date'].includes(k)))return null;
- const today=new Date().toISOString().slice(0,10);
- if(conditions.start_date&&(!/^\d{4}-\d{2}-\d{2}$/.test(conditions.start_date)||today<conditions.start_date))return null;
- if(conditions.end_date&&(!/^\d{4}-\d{2}-\d{2}$/.test(conditions.end_date)||today>conditions.end_date))return null;
- const chargeMin=n('chargeMinutes'),parkMin=n('parkingMinutes');if(parkMin<chargeMin)return null;
- const components={},types=new Set();let energy=null,flat=0,time=0,parking=0;
- for(const c of e.componenten||[]){
-  const type=c.type,price=Number(c.prijs),vat=Number(c.btw??0),step=Number(c.stap??1);
-  if(!['ENERGY','FLAT','TIME','PARKING_TIME'].includes(type)||types.has(type)||c.prijs===null||!Number.isFinite(price)||price<0||!Number.isFinite(vat)||vat<0||vat>100||!Number.isFinite(step)||step<=0)return null;
-  types.add(type);
-  // OCPI step: ENERGY in Wh; TIME/PARKING_TIME in seconds. NDW step=1 is common.
-  const quantity=type==='ENERGY'?Math.ceil(kwh*1000/step)*step/1000:type==='FLAT'?1:Math.ceil((type==='TIME'?chargeMin:parkMin)*60/step)*step/3600;
-  const net=price*quantity,gross=net*($('vatMode').value==='exclusive'?1+vat/100:1);
-  components[type]={net,gross,unitPrice:price,vat,quantity};
-  if(type==='ENERGY')energy=price;
-  else if(type==='FLAT')flat=gross;
-  else if(type==='TIME')time=gross;
-  else parking=gross;
- }
- if(energy===null)return null;
- const ndwTotal=Object.values(components).reduce((sum,c)=>sum+c.gross,0);
- const extras=n('shuttelFee')+kwh*n('shuttelMarkup')+n('parkingFee');
- return {total:ndwTotal+extras,ndwTotal,extras,energy,flat,time,parking,components,vatMode:$('vatMode').value};
-}
+function basicPrice(tariff,kwh){return PlannerCore.tariff(tariff,kwh,{chargeMinutes:n('chargeMinutes'),parkingMinutes:n('parkingMinutes'),vatMode:$('vatMode').value,shuttelFee:n('shuttelFee'),shuttelMarkup:n('shuttelMarkup'),parkingFee:n('parkingFee')})}
 function bestPrice(point,tariffs,kwh){
  const options=[];
  for(const connector of point.aansluitingen||[]){
   if(['REMOVED','INOPERATIVE','OUTOFORDER','PLANNED'].includes(connector.status))continue;
-  if((connector.onbekende_tarieven||[]).length)continue;
+  if((connector.onbekende_tarieven||[]).length||(connector.tarieven||[]).length!==1)continue;
   for(const key of connector.tarieven||[]){const p=basicPrice(tariffs[key],kwh);if(p)options.push({...p,connector,tariffKey:key})}
  }
  options.sort((a,b)=>a.total-b.total);return options[0]||null;
 }
-async function nearbyNdw(dest){
- const index=await readJson(ndwBase+'index.json'),size=Number(index.tegel_grootte_graden);
+async function nearbyNdw(dest,radius=500,reader=readJson){
+ const index=await reader(ndwBase+'index.json'),size=Number(index.tegel_grootte_graden);
  if(!Number.isFinite(size)||size<=0)throw Error('Onbekende geografische indeling.');
  const i=Math.floor(dest.lat/size),j=Math.floor(dest.lng/size),keys=[];
  for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++){const key=(i+di)+'_'+(j+dj);if(index.tegels?.[key])keys.push(index.tegels[key].bestand)}
- const tiles=await Promise.all(keys.map(name=>readJson(ndwBase+encodeURIComponent(name))));
+ const tiles=await Promise.all(keys.map(name=>reader(ndwBase+encodeURIComponent(name))));
  const points=new Map();
  for(let tileIndex=0;tileIndex<tiles.length;tileIndex++){
  const tile=tiles[tileIndex],sourceFile=keys[tileIndex];
  for(const p of tile.laadpalen||[]){
   const lat=Number(p.lat),lng=Number(p.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lng)||lat<50||lat>54||lng<3||lng>8)continue;
-  const coords={lat,lng},straight=haversine(dest,coords);if(straight>500)continue;
-  const tariff=bestPrice(p,tile.tarieven||{},Number($('chargeKwh').value));
+  const coords={lat,lng},straight=haversine(dest,coords);if(straight>radius)continue;
+  const tariff=bestPrice(p,tile.tarieven||{},n('chargeKwh'));
   const id=String(p.id||lat+','+lng);
   if(!points.has(id))points.set(id,{p,coords,straight,tariff,sourceFile,tariffKeys:[...new Set((p.aansluitingen||[]).flatMap(c=>c.tarieven||[]))],unknownTariffs:(p.aansluitingen||[]).some(c=>(c.onbekende_tarieven||[]).length>0),tariffDefinitions:Object.fromEntries([...new Set((p.aansluitingen||[]).flatMap(c=>c.tarieven||[]))].map(k=>[k,tile.tarieven?.[k]??null]))});
  }
@@ -347,7 +414,8 @@ function matchDirect(x,features){
  for(const f of features){const [lng,lat]=f.geometry.coordinates;if(!Number.isFinite(lat)||!Number.isFinite(lng))continue;
   const d=haversine(x.coords,{lat,lng});if(d<distance){distance=d;closest=f}}
  // Matching op locatie, niet op adres: >30 meter is te onzeker om de status toe te kennen.
- return distance<=30?closest:null;
+ const matches=features.filter(f=>{const [lng,lat]=f.geometry.coordinates;return Number.isFinite(lat)&&Number.isFinite(lng)&&haversine(x.coords,{lat,lng})<=30});
+ return matches.length===1?closest:null;
 }
 function addText(parent,tag,value,className){const e=document.createElement(tag);if(className)e.className=className;e.textContent=value;parent.appendChild(e);return e}
 // Eigen waarnemingen blijven lokaal op dit apparaat; ze zijn geen officiële storingsmeldingen.
@@ -384,7 +452,7 @@ function eligibleCharger(x,kwh,datasetAgeHours){
  const chosen=recent.length?recent:eligible;
  const options=[];
  for(const connector of chosen){
-  if((connector.onbekende_tarieven||[]).length)continue;
+  if((connector.onbekende_tarieven||[]).length||(connector.tarieven||[]).length!==1)continue;
   for(const key of connector.tarieven||[]){const price=basicPrice(x.tariffDefinitions?.[key],kwh);if(price)options.push({...price,connector,tariffKey:key})}
  }
  options.sort((a,b)=>a.total-b.total);
@@ -392,14 +460,18 @@ function eligibleCharger(x,kwh,datasetAgeHours){
 }
 
 $('refresh').onclick=async()=>{
- const btn=$('refresh');btn.disabled=true;$('chargers').replaceChildren();chargeMessage('NDW-laadpalen en loopafstanden controleren…');
+ const btn=$('refresh');btn.disabled=true;chargerChoiceControls=[];
+ const searchSettings=JSON.stringify(fields.map(id=>$(id).value));$('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('NDW-laadpalen en loopafstanden controleren…');
  try{
-  const kwh=Number($('chargeKwh').value);if(!Number.isFinite(kwh)||kwh<=0||kwh>200)throw Error('Vul 0,1 tot 200 kWh in.');
+  if(invalidNumbers().length)throw Error('Controleer de numerieke invoer; gebruik een komma of punt als decimaalteken.');
+  const kwh=n('chargeKwh');if(kwh<0.1||kwh>200)throw Error('Vul 0,1 tot 200 kWh in.');
+  if(n('parkingMinutes')<n('chargeMinutes'))throw Error('Totale aangesloten tijd mag niet korter zijn dan de laadduur.');
+  const searchDestination=$('destination').value.trim();
   const dest=await destinationCoords();
   // Live-data en statische prijsgegevens onafhankelijk ophalen.
   const [liveResult,staticResult]=await Promise.allSettled([directNdw(dest),nearbyNdw(dest)]);
-  if(staticResult.status==='rejected')throw staticResult.reason;
-  const {points,updated}=staticResult.value;
+  if(staticResult.status==='rejected'&&liveResult.status==='rejected')throw Error('NDW-prijsbestand en rechtstreekse status niet bereikbaar. Probeer later opnieuw.');
+  const {points,updated}=staticResult.status==='fulfilled'?staticResult.value:{points:[],updated:null};
   const liveOk=liveResult.status==='fulfilled';
   const liveFeatures=liveOk?liveResult.value:[];
   // Ook nieuwe locaties zonder lokaal tariefbestand opnemen (prijs onbekend).
@@ -427,10 +499,10 @@ $('refresh').onclick=async()=>{
   for(let i=0;i<points.length;i+=8){
    const batch=points.slice(i,i+8);
    const results=await Promise.all(batch.map(async point=>{
-    try{const walk=await walkingDistance(dest,point.coords);return {point,walk,error:false}}
+    try{const walk=await walkingDistance(point.coords,dest);return {point,walk,error:false}}
     catch(e){return {point,walk:null,error:true}}
    }));
-   for(const r of results){if(r.error||r.walk===null)failures++;else if(r.walk<=500)found.push({...r.point,walk:r.walk})}
+   for(const r of results){if(r.error||r.walk===null)failures++;else if(r.walk>=0&&r.walk<=500)found.push({...r.point,walk:r.walk})}
    chargeMessage('Looproutes gecontroleerd: '+Math.min(i+8,points.length)+' van '+points.length+'…');
   }
   const candidates=found.map(x=>{
@@ -439,12 +511,14 @@ $('refresh').onclick=async()=>{
     if(!x.direct||x.direct.total<=0||x.direct.free<=0)return null;
     const t=Date.parse(x.direct.updated),age=Number.isFinite(t)?(Date.now()-t)/3600000:Infinity;
     const old=eligibleCharger(x,kwh,datasetAgeHours);
-    return {...x,tariff:old?.tariff||x.tariff||null,tier:age>=0&&age<=0.25?0:1,availableCount:x.direct.free,latestAvailable:Number.isFinite(t)?t:null,live:true};
+    return {...x,tariff:old?.tariff||null,tier:age>=0&&age<=0.25?0:1,availableCount:x.direct.free,latestAvailable:Number.isFinite(t)?t:null,live:true};
    }
    return eligibleCharger(x,kwh,Infinity);
   }).filter(Boolean);
   const priced=candidates.filter(x=>x.tariff);
-  const displayed=candidates.sort((a,b)=>a.tier-b.tier||(a.tariff?.total??Infinity)-(b.tariff?.total??Infinity)||a.walk-b.walk).slice(0,3);
+  if(candidates.some(x=>!x.tariff))addText($('unknownChargers'),'h3','Niet vergelijkbare tarieven — kunnen goedkoper zijn');
+  const displayed=PlannerCore.rank(candidates);
+  if($('destination').value.trim()!==searchDestination||JSON.stringify(fields.map(id=>$(id).value))!==searchSettings)throw Error('Bestemming of instellingen gewijzigd tijdens zoeken. Zoek opnieuw.');
   if(!displayed.length){chargeMessage((liveOk?'Geen vrije AC Type 2-aansluitingen volgens de rechtstreekse NDW-gegevens binnen 500 m lopen. Controleer de exploitant of zoek verder weg.':'Geen laadpalen met een AVAILABLE-melding binnen 500 m lopen volgens het oude prijsbestand. Rechtstreekse NDW-status is niet beschikbaar.'));return}
   for(const x of displayed){
    const el=document.createElement('article');el.className='charger';
@@ -459,6 +533,11 @@ $('refresh').onclick=async()=>{
     addText(el,'p',(x.live?'Rechtstreekse NDW-status. '+x.availableCount+' van '+x.direct.total+' AC Type 2-aansluitingen vrij gemeld. ':'⚠️ Alleen opgeslagen momentopname; niet actueel bevestigd. ')+(x.latestAvailable?'Laatste statusupdate: '+new Date(x.latestAvailable).toLocaleString('nl-NL')+'. ':'')+'Aanwezigheid en werking niet gegarandeerd.','uncertain');
     addText(el,'p',x.tariff?money(x.tariff.total)+' / '+fmt(kwh)+' kWh':'Tarief onbekend','price-main');
     addText(el,'p','Prijs indicatief · beschikbaarheid kan wijzigen','uncertain');
+    if(x.tariff?.tariffType==='AD_HOC_PAYMENT')addText(el,'p','Tarief voor direct betalen bij de laadpaal. Shuttel-eindprijs niet bevestigd.','uncertain');
+    if(x.unknownTariffs)addText(el,'p','Er zijn ook onbekende tariefverwijzingen op deze locatie; een ander tarief kan goedkoper zijn.','uncertain');
+    if(x.live&&x.tariff)addText(el,'p','Vrije aantallen gelden voor de locatie; NDW bevestigt niet dat juist de goedkoopste aansluiting nu vrij is.','uncertain');
+    const choose=document.createElement('button');choose.type='button';choose.className='charger-choice';choose.textContent='Dit is mijn keuze';choose.setAttribute('aria-pressed','false');choose.onclick=()=>chooseCharger(x);el.appendChild(choose);
+    chargerChoiceControls.push({key:reportKey(x),card:el,button:choose});
     const links=document.createElement('div');links.className='navlinks';
     function navLink(label,origin,destination,mode){const a=document.createElement('a');const url=new URL('https://www.google.com/maps/dir/');url.searchParams.set('api','1');url.searchParams.set('origin',origin);url.searchParams.set('destination',destination);url.searchParams.set('travelmode',mode);a.href=url.toString();a.target='_blank';a.rel='noopener noreferrer';a.textContent=label;links.appendChild(a)}
     const chargerCoords=x.coords.lat+','+x.coords.lng;
@@ -490,25 +569,27 @@ $('refresh').onclick=async()=>{
      if(alternatives.length){const d=document.createElement('details');const sm=document.createElement('summary');sm.textContent='Andere aansluitingen ('+alternatives.length+')';d.appendChild(sm);for(const a of alternatives)addText(d,'p',a.id+' · '+a.key+' · '+money(a.total)+' · '+a.status,'muted');details.appendChild(d)}
      addText(details,'p','NDW incl. btw-aanname: '+money(x.tariff.ndwTotal)+'; extra ingevoerde kosten: '+money(x.tariff.extras)+'. Energie '+money(x.tariff.components.ENERGY?.gross||0)+' · start '+money(x.tariff.flat)+' · laadtijd '+money(x.tariff.time)+' · parkeertijd '+money(x.tariff.parking)+'. Werkelijke Shuttel-eindprijs onbekend.','muted');
      const apply=document.createElement('button');apply.className='secondary';apply.textContent='Tarief gebruiken bij ritkosten';
-     apply.onclick=()=>{$('publicPrice').value=(x.tariff.components.ENERGY.gross/x.tariff.components.ENERGY.quantity+n('shuttelMarkup')).toFixed(4);$('startFee').value=(x.tariff.flat+x.tariff.time+x.tariff.parking+n('shuttelFee')+n('parkingFee')).toFixed(2);calc();switchTab('kosten')};details.appendChild(apply);
+     apply.onclick=()=>{useChargerTariff(x);calc();switchTab('kosten')};details.appendChild(apply);
     }else addText(details,'p','Tarief onbekend; totale laadprijs niet betrouwbaar berekenbaar.','muted');
     const tech=document.createElement('details');const ts=document.createElement('summary');ts.textContent='Technische NDW-gegevens';tech.appendChild(ts);
     const diagnostic=document.createElement('pre');diagnostic.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f1f5f7;padding:10px;border-radius:8px';
     diagnostic.textContent=JSON.stringify({bestand:x.sourceFile,laadpaalId:x.p.id,tariefcodes:x.tariffKeys,tariefDefinities:x.tariffDefinitions,onbekendeTarieven:x.unknownTariffs,aansluitingen:x.p.aansluitingen},null,2);
     tech.appendChild(diagnostic);details.appendChild(tech);el.appendChild(details);
-   $('chargers').appendChild(el);
+   (x.tariff?$('chargers'):$('unknownChargers')).appendChild(el);
   }
-  chargeMessage((liveOk?'Rechtstreekse NDW-status':'⚠️ Alleen oude momentopname')+' · '+displayed.length+' laadlocaties met vrije melding getoond: '+displayed.filter(x=>x.tier===0).length+' recent (groen), '+displayed.filter(x=>x.tier===1).length+' ouder/onbekend (oranje). Eerst betrouwbaarheid, dan prijs en loopafstand. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'Vrije aansluitingen kunnen vóór aankomst bezet raken. Prijzen uit afzonderlijk, mogelijk ouder bestand. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
+  updateChosenCharger();
+  chargeMessage((liveOk?'Rechtstreekse NDW-status':'⚠️ Alleen oude momentopname')+' · '+displayed.length+' laadlocaties met vrije melding getoond: '+displayed.filter(x=>x.tier===0).length+' recent (groen), '+displayed.filter(x=>x.tier===1).length+' ouder/onbekend (oranje). Top 3 gerangschikt op geschatte sessieprijs, daarna loopafstand; statusouderdom apart vermeld. Onbekende/complexe tarieven apart, mogelijk goedkoper. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'Vrije aansluitingen kunnen vóór aankomst bezet raken. Prijzen uit afzonderlijk, mogelijk ouder bestand. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
  }catch(e){chargeMessage('Zoeken mislukt: '+(e.message||String(e)))}finally{btn.disabled=false}
 };
 let autoRouteTimer=null;
 function scheduleAutomaticRoute(){
  clearTimeout(autoRouteTimer);
+ $('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('Route/adres gewijzigd. Zoek laadpalen opnieuw.');
  if(!$('origin').value.trim()||!$('destination').value.trim()||!mapsReady)return;
  autoRouteTimer=setTimeout(()=>{if(!$('routeBtn').disabled)$('routeBtn').click()},650);
 }
 $('routeBtn').onclick=async()=>{
- if(!mapsReady||!routeClass){status('Verbind eerst Google Maps onder onderdeel 5.');return}
+ if(!mapsReady||!routeClass){status('Verbind eerst Google Maps onder Meer.');return}
  const o=$('origin').value.trim(),d=$('destination').value.trim();
  if(!o||!d){status('Vul vertrekadres en bestemming in.');return}
  const button=$('routeBtn');button.disabled=true;status('Heen- en terugafstand berekenen…');
@@ -519,9 +600,10 @@ $('routeBtn').onclick=async()=>{
    return meters/1000;
   };
   const [out,back]=await Promise.all([calculateRoute(o,d),calculateRoute(d,o)]);
+  if(o!==$('origin').value.trim()||d!==$('destination').value.trim()){status('Adressen gewijzigd. De nieuwe route wordt opnieuw berekend.');return}
   $('outkm').value=out.toFixed(1);$('backkm').value=back.toFixed(1);updateRouteTotal();calc();
   status('Afstanden berekend: '+fmt(out)+' km heen, '+fmt(back)+' km terug.',true);
- }catch(e){status('Routeberekening mislukt: '+e.message)}finally{button.disabled=false}
+ }catch(e){status('Routeberekening mislukt: '+e.message)}finally{button.disabled=false;if(o!==$('origin').value.trim()||d!==$('destination').value.trim())scheduleAutomaticRoute()}
 };
 updateRouteTotal();
 function updateManualCapacity(){$('manualCapacityBox').classList.toggle('hidden',$('season').value!=='manual')}
@@ -543,23 +625,84 @@ function checkRangeWarning(){
 ['season','manualCapacity','range','rangeAfter','outkm'].forEach(id=>{
  $(id).addEventListener('input',checkRangeWarning);$(id).addEventListener('change',checkRangeWarning);
 });
-function getBook(){try{return JSON.parse(localStorage.getItem('volvo-adresboek-v2')||'[]')}catch(e){return []}}
-function bookRender(){const b=getBook(),sel=$('book');sel.replaceChildren(new Option('Kies een bestemming…',''));b.forEach((x,i)=>sel.add(new Option(x.name+' — '+x.destination,String(i))))}
+function getBook(){try{const b=JSON.parse(localStorage.getItem('volvo-adresboek-v2')||'[]');return Array.isArray(b)?b.filter(x=>x&&typeof x.name==='string'&&typeof x.destination==='string'):[]}catch(e){return []}}
+function bookRender(){const sel=$('book');sel.replaceChildren(new Option('Kies een adres…',''));for(const {entry,index} of ContactsBook.filterBook(getBook(),$('bookFilter').value))sel.add(new Option(entry.name+' — '+entry.destination,String(index)))}
+$('bookFilter').addEventListener('input',bookRender);
 $('save').onclick=()=>{
  const d=$('destination').value.trim();if(!d){status('Vul eerst een bestemming in.');return}
  const name=prompt('Naam voor adresboek:',d);if(name===null)return;
- const b=getBook();b.push({name:name.trim()||d,destination:d});
+ const b=getBook();b.push({name:name.trim()||d,destination:d});$('bookFilter').value='';
  try{localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender();$('book').value=String(b.length-1)}catch(e){alert('Opslaan niet mogelijk.')}
 };
-$('book').onchange=()=>{const i=$('book').value;if(i==='')return;const x=getBook()[Number(i)];if(x){$('destination').value=x.destination;calc()}};
+$('book').onchange=()=>{const i=$('book').value;if(i==='')return;const x=getBook()[Number(i)];if(x){const target=$('bookTarget').value==='origin'?'origin':'destination';$(target).value=x.destination;$(target).dispatchEvent(new Event('input',{bubbles:true}));calc();scheduleAutomaticRoute()}};
 $('remove').onclick=()=>{const i=$('book').value;if(i===''||!confirm('Bestemming verwijderen?'))return;const b=getBook();b.splice(Number(i),1);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender()};
 $('print').onclick=()=>window.print();
-$('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');location.reload()};
-for(const id of fields)$(id).addEventListener('input',calc);
-for(const id of ['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee'])$(id).addEventListener('change',()=>{chargeMessage('Instellingen gewijzigd: klik opnieuw op Zoek laadpalen om prijzen te herberekenen.');});
+$('reset').onclick=()=>{if(!confirm('Invoer herstellen? Het adresboek blijft bewaard.'))return;localStorage.removeItem('volvo-planner-input-v2');clearAppliedTariff();localStorage.removeItem('volvo-planner-chosen-charger-v1');location.reload()};
+for(const id of ['publicPrice','startFee'])$(id).addEventListener('input',clearAppliedTariff);
+for(const id of fields){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);}
+for(const id of ['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee'])$(id).addEventListener('change',()=>{$('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('Instellingen gewijzigd: klik opnieuw op Zoek / ververs laadpalen om prijzen te herberekenen.');});
 try{const saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(const id of fields)if(saved[id]!==undefined){if(id==='origin' && ['Beekbergen, Nederland','Beekbergen'].includes(String(saved[id]).trim()))continue;$(id).value=saved[id]}}catch(e){}
-bookRender();updateManualCapacity();checkRangeWarning();calc();
+let pendingContacts=[],contactBoxes=[],contactReadVersion=0;
+function contactsClear(){pendingContacts=[];contactBoxes=[];$('contactsPreview').replaceChildren();$('contactsImport').disabled=true;$('contactsCancel').disabled=true;$('contactsFile').value=''}
+function contactsPreview(entries,message){contactsClear();pendingContacts=entries;for(const [i,entry] of entries.entries()){const row=document.createElement('div');row.className='contact-preview';const box=document.createElement('input');box.type='checkbox';box.id='contactPick'+i;box.checked=true;const label=document.createElement('label');label.setAttribute('for',box.id);label.textContent=entry.name+' — '+entry.destination;row.append(box,label);$('contactsPreview').appendChild(row);contactBoxes.push(box)}$('contactsImport').disabled=!entries.length;$('contactsCancel').disabled=!entries.length;$('contactsStatus').textContent=message+' Bekijk de selectie; er is nog niets opgeslagen.'}
+$('contactsFile').addEventListener('change',async()=>{const version=++contactReadVersion;const file=$('contactsFile').files?.[0];if(!file)return;try{if(file.size>5*1024*1024)throw Error('Kies een bestand van maximaal 5 MB.');const text=await file.text();if(version!==contactReadVersion)return;const parsed=ContactsBook.parseVCard(text);contactsPreview(parsed.entries,parsed.entries.length+' adres(sen) gevonden; '+parsed.withoutAddress+' contact(en) zonder bruikbaar postadres overgeslagen.')}catch(e){if(version!==contactReadVersion)return;contactsClear();$('contactsStatus').textContent='Import niet uitgevoerd: '+e.message}});
+$('contactsImport').onclick=()=>{const selected=pendingContacts.filter((_,i)=>contactBoxes[i].checked);if(!selected.length){$('contactsStatus').textContent='Selecteer eerst minstens één contact.';return}try{const result=ContactsBook.merge(getBook(),selected);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(result.entries));contactsClear();$('bookFilter').value='';bookRender();$('contactsStatus').textContent=result.added+' adres(sen) lokaal toegevoegd; '+result.duplicates+' bestaande vermelding(en) overgeslagen. Kies nu Bestemming of Vertrekadres en selecteer een naam.'}catch(e){$('contactsStatus').textContent='Opslaan is niet gelukt; de bestaande contacten zijn behouden.'}};
+$('contactsCancel').onclick=()=>{contactReadVersion++;contactsClear();$('contactsStatus').textContent='Voorbeeld gesloten. Er is niets toegevoegd.'};
+const deviceContactPicker=!!navigator.contacts?.select;$('contactsDevice').disabled=!deviceContactPicker;
+if(!deviceContactPicker)$('contactsDevice').textContent='Direct kiezen niet ondersteund — gebruik .vcf';
+$('contactsDevice').onclick=async()=>{try{if(!deviceContactPicker)return;const supported=await navigator.contacts.getProperties();if(!supported.includes('address'))throw Error('Deze contactenkiezer deelt geen postadressen. Gebruik een .vcf-bestand.');const chosen=await navigator.contacts.select(['name','address'],{multiple:true});const entries=ContactsBook.fromDevice(chosen);contactsPreview(entries,entries.length+' geselecteerde adres(sen) ontvangen.')}catch(e){if(e.name!=='AbortError')$('contactsStatus').textContent=e.message}};
+async function updateMicrophoneStatus(){try{if(!navigator.permissions?.query)return;const permission=await navigator.permissions.query({name:'microphone'});const show=()=>{$('microphoneStatus').textContent=permission.state==='granted'?'Microfoon: browsertoegang toegestaan voor deze website. Klik op 🎤 om te dicteren.':permission.state==='denied'?'Microfoon: geblokkeerd door de browser. Zet Microfoon voor deze website op Toestaan in de site-instellingen.':'Microfoon: de browser vraagt nog toestemming. Kies Toestaan tijdens bezoek aan de site voor volgende bezoeken.'};show();permission.onchange=show}catch(e){$('microphoneStatus').textContent='Microfoon: controleer de toestemming bij Sitegegevens in je browser.'}}
+updateMicrophoneStatus();
+bookRender();updateManualCapacity();checkRangeWarning();updateRouteTotal();calc();
 try{if(localStorage.getItem(mapsKeyName))initMaps()}catch(e){}
+
+async function findAlternative(coords,target,current,features){
+ const alreadyOffered=alternativeFor===target.key;const version=++alternativeVersion,visit=$('destination').value.trim();
+ const valid=()=>current()&&version===alternativeVersion&&visit===$('destination').value.trim();
+ $('alternativeResult').replaceChildren();$('alternativeStatus').textContent='Gekozen laadpaal niet vrij gemeld. Ik zoek één andere vrije locatie op maximaal 500 m lopen van je bestemming…';
+ try{
+  const dest=await destinationCoords();if(!valid())return;
+  const data=await nearbyNdw(dest);if(!valid())return;
+  const candidates=data.points.filter(x=>reportKey(x)!==target.key&&haversine(x.coords,target.coords)>30&&!['broken','missing'].includes(reportFor(x)?.kind)&&RideMode.readAvailability(matchDirect(x,features)).state==='available').sort((a,b)=>a.straight-b.straight).slice(0,8);
+  const found=[];
+  for(const x of candidates){
+   if(!valid())return;
+   try{const walk=await walkingDistance(x.coords,dest);if(!valid())return;if(!Number.isFinite(walk)||walk<0||walk>500)continue;
+    const route=await routeClass.computeRoutes({origin:coords,destination:x.coords,travelMode:'DRIVING',fields:['distanceMeters']});if(!valid())return;
+    const drive=route.routes?.[0]?.distanceMeters;if(Number.isFinite(drive)&&drive>=0)found.push({...x,walk,drive});
+   }catch(e){}
+  }
+  if(!valid())return;
+  found.sort((a,b)=>a.drive-b.drive);const x=found[0];
+  if(!x){$('alternativeStatus').textContent='Geen andere actuele vrije laadpaal met bevestigde loop- en autoroute gevonden. Er wordt geen onzekere locatie aangeboden.';return}
+  // Controleer de status opnieuw na het berekenen van alle routes.
+  const fresh=await directNdw(x.coords);if(!valid())return;
+  const availability=RideMode.readAvailability(matchDirect(x,fresh));
+  if(availability.state!=='available'){$('alternativeStatus').textContent='De andere laadpaal is inmiddels niet meer vrij bevestigd. Ik controleer opnieuw bij de volgende locatie-update.';return}
+  alternativeFor=target.key;
+  const name=[x.p.adres||x.p.naam||'Laadlocatie',x.p.plaats].filter(Boolean).join(', '),card=document.createElement('article');card.className='charger';addText(card,'h3',name);addText(card,'p','Vrij gemeld door NDW · '+fmt(x.drive/1000)+' km rijden · '+Math.round(x.walk)+' m lopen naar je oorspronkelijke bestemming.');addText(card,'p',x.tariff?'Geschatte volledige laadsessie: '+money(x.tariff.total)+'. Shuttel en parkeren niet geverifieerd.':'Tarief onbekend; Shuttel en parkeren niet geverifieerd.','muted');
+  const link=document.createElement('a');link.className='button';link.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.coords.lat+','+x.coords.lng)+'&travelmode=driving';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Kies deze laadpaal en open Google Maps ↗';link.onclick=()=>{chooseCharger(x)};card.appendChild(link);$('alternativeResult').replaceChildren(card);$('alternativeStatus').textContent='Eén andere laadpaal gevonden. Tik op de knop om deze te kiezen en Google Maps te openen.';if(!alreadyOffered)switchTab('alternatief');if(!alreadyOffered)rideSpeak('Je gekozen laadpaal is niet vrij gemeld. Een andere vrije laadpaal staat klaar op het tabblad Andere paal. Laat een passagier helpen of stop voordat je deze opent.');
+ }catch(e){if(valid()){$('alternativeResult').replaceChildren();$('alternativeStatus').textContent='Andere laadpaal zoeken is niet gelukt. Geen vrije locatie bevestigd.'}}
+}
+
+function rideSpeak(text){if(!window.speechSynthesis||!window.SpeechSynthesisUtterance)throw Error('Spraak niet ondersteund');window.speechSynthesis.cancel();const message=new SpeechSynthesisUtterance(text);message.lang='nl-NL';message.rate=0.95;message.onerror=event=>{if(!['interrupted','canceled'].includes(event.error))$('rideStatus').textContent='Gesproken melding kon niet worden afgespeeld. Controleer het geluid vóór vertrek.'};window.speechSynthesis.speak(message)}
+const rideController=RideMode.createController({
+ geo:navigator.geolocation,canSpeak:!!(window.speechSynthesis&&window.SpeechSynthesisUtterance),document,wakeLock:navigator.wakeLock,distance:haversine,speak:rideSpeak,cancelSpeech:()=>window.speechSynthesis?.cancel(),
+ status:(message,active)=>{$('rideStatus').textContent=message;$('rideStart').disabled=active;$('rideStop').disabled=!active},
+ scan:async(coords,target,current)=>{
+  const route=await routeClass.computeRoutes({origin:coords,destination:target.coords,travelMode:'DRIVING',fields:['distanceMeters']});
+  const driveMeters=route.routes?.[0]?.distanceMeters;
+  if(!Number.isFinite(driveMeters)||driveMeters<0)throw Error('Geen rijafstand ontvangen.');
+  if(!current()||driveMeters>2000)return {driveMeters};
+  try{const features=await directNdw(target.coords);if(!current())return {driveMeters};const feature=matchDirect({coords:target.coords},features),availability=RideMode.readAvailability(feature);if(availability.state==='unavailable')await findAlternative(coords,target,current,features);else if(availability.state!=='unavailable')clearAlternative();return {driveMeters,availability}}
+  catch(e){return {driveMeters,availability:{state:'unknown',detail:'Rechtstreekse NDW-controle mislukt. Beschikbaarheid niet bevestigd.'}}}
+ },
+ render:result=>{$('rideResults').replaceChildren();const card=document.createElement('article');card.className='charger';addText(card,'h3',result.target.name);addText(card,'p','Nog '+(result.driveMeters/1000).toLocaleString('nl-NL',{maximumFractionDigits:1})+' km rijafstand.');if(result.availability){addText(card,'p',result.availability.detail);if(result.availability.updated)addText(card,'p','Laatste NDW-statusupdate: '+new Date(result.availability.updated).toLocaleString('nl-NL'),'muted')}else addText(card,'p','De beschikbaarheidsmelding volgt rond 2 km.','muted');$('rideResults').appendChild(card)}
+});
+$('rideStart').onclick=()=>{if(!mapsReady||!routeClass){$('rideStatus').textContent='Verbind vóór vertrek Google Maps onder Meer.';return}rideController.start(RideMode.targetFromChoice(chosenCharger,$('destination').value.trim()))};
+$('rideStop').onclick=()=>rideController.stop();
+$('rideSound').onclick=()=>{try{rideSpeak('Dit is een test van de gesproken aankomstmelding. Controleer vóór vertrek of je dit goed hoort.')}catch(e){$('rideStatus').textContent='Deze browser kan geen gesproken meldingen afspelen.'}};
+for(const id of ['origin','destination'])for(const event of ['input','change'])$(id).addEventListener(event,()=>{clearAlternative();if(rideController.isActive())rideController.stop('Instellingen gewijzigd. Stel de ritstand opnieuw in wanneer je stilstaat.')});
 })();
 </script>
 </body></html>
