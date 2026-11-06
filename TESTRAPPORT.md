@@ -88,3 +88,11 @@ Vier nieuwe integratiescenario’s geslaagd: precies één actuele vrije andere 
 ## Definitieve publicatiecontrole
 
 Echte Chrome/Google-sessie: beide ingebouwde adresmenu’s geven resultaten. De eigen lijst haalt nu Google Places-voorspellingen op, met Geocoding als terugval. Voor vertrek (Amsterdam) en bestemming (Amersfoort) is daadwerkelijk naar de laatste resultaten gescrold; de interne schuifbalk staat onderaan. Microfoon gestart en gestopt zonder nieuwe toestemmingsvraag; auditieve herkenning op iPhone nog niet getest. 86 JavaScript-controles inclusief de nieuwe Places-selectie; iPhone/Volvo-overdracht vereist nog een fysieke proef.
+
+## Herstelknop en microfoon na herstellen
+
+Herstelknop verplaatst van Meer naar onderaan Route. Herstellen gebeurt zonder herladen: Maps-velden/verbinding, sleutel en contacten blijven behouden; ritstand en lopende spraak worden gestopt. Volgende microfoonstart maakt een nieuwe herkenningsinstantie. Geweigerde toegang krijgt apparaatneutrale tekst en verwijzing naar iPhone-toetsenborddicteren; een mislukte start herstelt de knop. Gesproken invoer zonder geladen Maps-zoekvelden blijft in het adresveld beschikbaar. Drie nieuwe integratiecontroles slagen, totaal 89 JavaScript-controles. Toegang geweigerd op de fysieke iPhone is door de gebruiker gemeld; dit is geen bewijs dat een websitewijziging de iOS-toestemming kan verlenen. Nieuwe versie nog niet geüpload, aparte toestemming vereist.
+
+## iPhone-bediening en bladertoetsen
+
+91 automatische controles (25 rekenen, 34 integratie, 20 aankomst, 12 contacten) geslaagd. iPhone-pad getest met nagebootste apparaatkenmerken: geen Web Speech-start, focus op juist zoekveld en optioneel gesloten Google-widget. Browserproef op 390x844 met expliciete voorbeeldadressen: Meer adressen verandert de interne scrollpositie van 0 naar 150; Vorige adressen brengt die terug naar 0. Het achtste adres kon gekozen worden. Screenshot iphone-scroll-dicteerproef.jpg. Deze proef is geen echte iPhone-touch- of spraaktest.

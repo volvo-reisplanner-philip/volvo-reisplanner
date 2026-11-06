@@ -201,7 +201,7 @@ const addressSessions={};
 async function searchSpokenAddress(id,phrase){
  const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');
  if(!query||!choices){$(id).value=phrase;$(id).dispatchEvent(new Event('change',{bubbles:true}));calc();status('Gesproken adres ingevuld. Verbind Google Maps onder Meer om het adres te zoeken en de route te berekenen.');return}
- query.value=phrase;choices.replaceChildren();
+ query.value=phrase;choices.replaceChildren();const scrollControls=$(id+'ScrollControls');if(scrollControls)scrollControls.hidden=true;
  status('Google Maps zoekt naar: '+phrase+'…');
  try{
   await loadMaps();
@@ -225,7 +225,7 @@ async function searchSpokenAddress(id,phrase){
     if(item.prediction){const place=item.prediction.toPlace();await place.fetchFields({fields:['formattedAddress','displayName']});if(query.value.trim()!==phrase.trim())return;address=place.formattedAddress||place.displayName||address;delete addressSessions[id]}
     $(id).value=address;
     query.value=address;
-    choices.replaceChildren();
+    choices.replaceChildren();if(scrollControls)scrollControls.hidden=true;
     $(id).dispatchEvent(new Event('change',{bubbles:true}));
     calc();scheduleAutomaticRoute();
     status((id==='origin'?'Vertrekadres':'Bestemming')+' via Google Maps gekozen: '+address,true);
@@ -233,8 +233,9 @@ async function searchSpokenAddress(id,phrase){
    });
    choices.append(option);
   }
+  if(scrollControls)scrollControls.hidden=results.length<3;
   const attribution=document.createElement('small');attribution.textContent='Google Maps';choices.append(attribution);
-  addressMessage(id,'Kies hieronder het juiste adres. Veeg of scroll binnen de lijst voor meer resultaten.',true);
+  addressMessage(id,'Kies hieronder het juiste adres. Veeg binnen de lijst of gebruik Meer adressen ↓.',true);
   status('Selecteer het juiste adres uit de Google Maps-resultaten.');
  }catch(err){if(query.value.trim()!==phrase.trim())return;const message='Google Maps zoeken mislukt: '+String(err.message||err).replace(/AIza[0-9A-Za-z_-]+/g,'[sleutel verborgen]');addressMessage(id,message);status(message);}
 }
@@ -307,9 +308,11 @@ async function initMaps(){
    const voiceQuery=document.createElement('input');voiceQuery.id=id+'VoiceSearch';voiceQuery.placeholder='Typ of dicteer een adres voor Google Maps';voiceQuery.setAttribute('aria-label','Google Maps zoek'+(id==='origin'?'vertrekadres':'bestemming'));
    let addressTimer=null;
    const findAddress=()=>{clearTimeout(addressTimer);if(voiceQuery.value.trim())searchSpokenAddress(id,voiceQuery.value.trim());else voiceChoices.replaceChildren()};
-   voiceQuery.addEventListener('input',()=>{clearTimeout(addressTimer);voiceChoices.replaceChildren();if(voiceQuery.value.trim().length>=4)addressTimer=setTimeout(findAddress,550)});
+   voiceQuery.addEventListener('input',()=>{clearTimeout(addressTimer);voiceChoices.replaceChildren();scrollControls.hidden=true;if(voiceQuery.value.trim().length>=4)addressTimer=setTimeout(findAddress,550)});
    voiceQuery.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();findAddress()}});
    const voiceChoices=document.createElement('div');voiceChoices.id=id+'VoiceChoices';voiceChoices.className='voice-choices';voiceChoices.setAttribute('role','region');voiceChoices.setAttribute('aria-label','Google Maps adresresultaten '+(id==='origin'?'vertrek':'bestemming'));voiceChoices.setAttribute('tabindex','0');
+   const scrollControls=document.createElement('div');scrollControls.id=id+'ScrollControls';scrollControls.className='actions';scrollControls.hidden=true;
+   for(const [text,direction] of [['Vorige adressen ↑',-1],['Meer adressen ↓',1]]){const control=document.createElement('button');control.type='button';control.className='secondary';control.textContent=text;control.setAttribute('aria-label',text+' '+(id==='origin'?'vertrek':'bestemming'));control.onclick=()=>voiceChoices.scrollBy({top:direction*150,behavior:'auto'});scrollControls.append(control)}
    const fallback=document.createElement('button');fallback.id=id+'AddressSearch';fallback.type='button';fallback.className='secondary';fallback.textContent='Zoek adres';
    fallback.addEventListener('click',()=>{clearTimeout(addressTimer);const phrase=voiceQuery.value.trim()||input.value.trim();if(!phrase){voiceQuery.focus();status('Typ eerst een adres in het zoekveld.');return}searchSpokenAddress(id,phrase)});
    const help=document.createElement('small');help.className='muted';help.textContent='Typ in het extra zoekveld hieronder of gebruik de microfoon. De Google-resultaten verschijnen onder Zoek adres in een scrollbare lijst. Veeg op je iPhone binnen die lijst. Het ingebouwde Google-menu hierboven blijft ook beschikbaar.';
@@ -318,8 +321,8 @@ async function initMaps(){
     label.textContent='🔎 Google Maps-adreszoeken';voiceQuery.placeholder='Typ hier of dicteer met het iPhone-toetsenbord';voiceQuery.setAttribute('enterkeyhint','search');
     help.textContent='Tik in het zoekveld en gebruik 🎤 op het iPhone-toetsenbord. Tik daarna op Zoek adres. Veeg binnen de resultatenlijst om alle resultaten te zien.';
     const nativeMenu=document.createElement('details'),nativeSummary=document.createElement('summary');nativeSummary.textContent='Ander Google-zoekmenu (optioneel)';nativeMenu.append(nativeSummary,widget);
-    search.append(label,voiceQuery,help,fallback,searchStatus,voiceChoices,nativeMenu);
-   }else{search.append(label,widget,voiceQuery,help,fallback,searchStatus,voiceChoices)}
+    search.append(label,voiceQuery,help,fallback,searchStatus,voiceChoices,scrollControls,nativeMenu);
+   }else{search.append(label,widget,voiceQuery,help,fallback,searchStatus,voiceChoices);search.append(scrollControls)}
    input.closest('.address-entry').insertAdjacentElement('afterend',search);
    widget.addEventListener('gmp-error',()=>{const message='Google Places-adressuggesties niet beschikbaar. Gebruik Zoek adres hieronder; de uitkomst verschijnt direct hier. Controleer bij weigering Places API (New) en websitebeperkingen.';addressMessage(id,message);status(message)});
    widget.addEventListener('gmp-select',async event=>{
@@ -656,7 +659,7 @@ $('reset').onclick=()=>{
  clearAppliedTariff();chosenCharger=null;chargerChoiceControls=[];
  try{localStorage.removeItem('volvo-planner-input-v2');localStorage.removeItem('volvo-planner-chosen-charger-v1')}catch(e){}
  for(const id of fields)$(id).value=initialInput[id];
- for(const id of ['origin','destination']){delete addressSessions[id];const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');if(query)query.value='';if(choices)choices.replaceChildren();addressMessage(id,'')}
+ for(const id of ['origin','destination']){delete addressSessions[id];const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');if(query)query.value='';if(choices)choices.replaceChildren();const controls=$(id+'ScrollControls');if(controls)controls.hidden=true;addressMessage(id,'')}
  $('chargers').replaceChildren();$('unknownChargers').replaceChildren();$('rideResults').replaceChildren();clearAlternative();
  updateManualCapacity();checkRangeWarning();updateRouteTotal();calc();updateChosenCharger();
  chargeMessage('Invoer hersteld. Zoek opnieuw laadpalen bij je bestemming.');

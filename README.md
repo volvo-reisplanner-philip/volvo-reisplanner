@@ -1,3 +1,15 @@
+## Actuele online versie — iPhone-herstel
+
+De planner is gepubliceerd op https://volvo-reisplanner-philip.github.io/volvo-reisplanner/ . Onderstaande eerdere opleveringsnotities zijn deels historisch; meldingen dat niet is gepubliceerd beschrijven de situatie vóór de goedgekeurde publicatie.
+
+Op iPhone/iPad focust 🎤 het Google-adreszoekveld. Tik daarna zelf op de microfoon van het iPhone-toetsenbord; de website kan toetsenborddicteren niet starten. Typen blijft mogelijk. Zoek adres toont een eigen begrensde resultatenlijst met knoppen Vorige adressen ↑ en Meer adressen ↓. Het oorspronkelijke Google-menu blijft beschikbaar onder Ander Google-zoekmenu (optioneel).
+
+Invoer herstellen staat onderaan Route en werkt zonder herladen. Het stopt lopende spraak/ritstand en herstelt de invoer, met behoud van adresboek, Google-sleutel en actieve Maps-velden. Het verleent geen iOS-toestemming. Bron: https://support.apple.com/nl-nl/guide/iphone/iph2c0651d2/ios
+
+De complete download bevat het startprogramma en de tests; de website gebruikt de HTML/JS-bestanden met de automatisch ververste NDW-data. De overdracht naar de fysieke Volvo en de echte toetsenborddicteerfunctie vereisen een proef op het toestel.
+
+---
+
 ## Starten op de Mac in Chrome — nieuwste versie
 
 Dubbelklik in deze map op **Start Volvo Reisplanner.command**. Het startprogramma opent Google Chrome op de vaste lokale website `http://127.0.0.1:8788/`. Laat Terminal open staan zolang je de planner gebruikt. Stoppen kan met Ctrl+C. Open niet langer een los index.html-bestand voor dagelijks gebruik.
