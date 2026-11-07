@@ -564,11 +564,17 @@ $('refresh').onclick=async()=>{
     const parkingAddress=[x.p.adres||x.p.naam,x.p.plaats].filter(Boolean).join(', ');
     addText(parking,'p','Zoek in EasyPark op '+(parkingAddress||'het adres van deze laadpaal')+' of op het zonenummer van het parkeerbord.');
     const parkingMap=document.createElement('a');parkingMap.href='https://www.easypark.com/nl/locaties';parkingMap.target='_blank';parkingMap.rel='noopener noreferrer';parkingMap.textContent='Bekijk de EasyPark-parkeerkaart ↗';parking.appendChild(parkingMap);
-    addText(parking,'p','Controleer zone, betaaluren en het totale parkeerbedrag inclusief eventuele EasyPark-kosten. Vul dat bedrag eenmaal in voor deze rit.','muted');
+    addText(parking,'p','Controleer voor deze zone de geplande datum en het hele parkeertijdvak in EasyPark, bij de gemeente of op het parkeerbord. Zondagen en feestdagen kunnen afwijken. Vul het totale bedrag inclusief eventuele EasyPark-kosten in. Gebruik € 0 alleen als de hele periode gratis is.','muted');
     const parkingActions=document.createElement('div');parkingActions.className='actions';
     const parkingEntry=document.createElement('button');parkingEntry.type='button';parkingEntry.className='secondary';parkingEntry.textContent='Parkeerkosten invullen';
     parkingEntry.onclick=()=>{const fee=$('parkingFee');const panel=fee.closest('details');if(panel)panel.open=true;fee.focus()};
-    parkingActions.appendChild(parkingEntry);parking.appendChild(parkingActions);el.appendChild(parking);
+    const freeParking=document.createElement('button');freeParking.type='button';freeParking.className='secondary';freeParking.textContent='Gecontroleerd: gratis parkeren';
+    freeParking.onclick=()=>{
+     if(!confirm('Heb je voor '+(parkingAddress||'deze laadpaal')+' gecontroleerd dat parkeren op je geplande datum en gedurende het hele parkeertijdvak gratis is?'))return;
+     const fee=$('parkingFee');fee.value='0';fee.dispatchEvent(new Event('change',{bubbles:true}));
+     chargeMessage('€ 0 gemeentelijke parkeerkosten ingevuld op basis van je controle. Zoek opnieuw laadpalen om de ramingen te vernieuwen.',true);
+    };
+    parkingActions.append(parkingEntry,freeParking);parking.appendChild(parkingActions);el.appendChild(parking);
 
     const check=document.createElement('a');check.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([x.p.adres,x.p.plaats,'laadpaal'].filter(Boolean).join(' '));check.target='_blank';check.rel='noopener noreferrer';check.textContent='🔎 Locatie vergelijken in Google Maps';el.appendChild(check);
     const reports=document.createElement('details');reports.className='info';
