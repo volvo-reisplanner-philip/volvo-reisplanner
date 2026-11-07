@@ -30,12 +30,12 @@ button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#e5edf2;colo
 .charger a{display:inline-block;padding:8px 12px;background:#e5edf2;border-radius:8px;text-decoration:none;font-weight:650}
 .badge{display:inline-block;padding:4px 8px;border-radius:6px;background:#e5edf2;font-size:.75rem;margin:3px 5px 3px 0}
 .hidden{display:none!important}a{color:#125577}small{font-size:.78rem}
-.tabbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;background:#102d43;padding:8px max(8px,calc((100vw - 790px)/2));box-shadow:0 3px 8px #0002}
+.tabbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;background:#102d43;padding:8px max(8px,calc((100vw - 790px)/2));box-shadow:0 3px 8px #0002}
 .tabbar button{font-size:.87rem;padding:11px 2px;background:#27465a;border-radius:8px}.tabbar button.active{background:#fff;color:#102d43}
 .view[hidden]{display:none!important}details.info{border-top:1px solid #e1e8ec;margin-top:9px;padding-top:9px}details.info summary{cursor:pointer;font-weight:650;color:#125577;padding:8px 0}
 .charger a.button{display:block;background:#125577;color:white;text-decoration:none;text-align:center;border-radius:10px;padding:16px;font-weight:700}.charger .mini-line{margin:7px 0;font-size:.91rem}.charger .price-main{font-size:1.35rem;font-weight:800;color:#12643f;margin:7px 0}.charger .navlinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.charger .navlinks a{font-size:.85rem;flex:1;text-align:center;white-space:nowrap;padding:10px 6px}
 .charger .uncertain{font-size:.74rem;color:#6b5a34;margin:5px 0}.card .compact-note{font-size:.78rem;color:#526a77}.address-entry{display:flex;gap:7px;align-items:center}.address-entry{min-width:0;width:100%}.address-entry input{flex:1 1 0;min-width:0;width:0}.voice-btn{flex:0 0 44px;width:44px;padding:11px 0;display:inline-flex;align-items:center;justify-content:center}.maps-search{width:100%;min-width:0;overflow:visible}gmp-place-autocomplete{max-width:100%;min-width:0}.voice-btn.listening{background:#a03535}.voice-choices{display:grid;gap:5px;margin:5px 0}.address-option{text-align:left;font-size:.84rem;padding:9px 11px;white-space:normal}
-@media(max-width:430px){.grid{grid-template-columns:1fr}.card{padding:14px}header{padding:13px 12px}header h1{font-size:1.3rem}header p{display:none}main{padding:10px 9px 85px}.tabbar{position:fixed;top:auto;bottom:0;left:0;right:0;padding:7px 8px max(7px,env(safe-area-inset-bottom));}.tabbar button{font-size:.82rem;padding:11px 0}.charger{padding:11px}.charger h3{font-size:.96rem}}
+@media(max-width:430px){.grid{grid-template-columns:1fr}.card{padding:14px}header{padding:13px 12px}header h1{font-size:1.3rem}header p{display:none}main{padding:10px 9px calc(125px + env(safe-area-inset-bottom))}.tabbar{grid-template-columns:repeat(4,minmax(0,1fr));position:fixed;top:auto;bottom:0;left:0;right:0;padding:7px 8px max(7px,env(safe-area-inset-bottom));}.tabbar button{font-size:.79rem;min-height:44px;padding:6px 2px;overflow-wrap:anywhere}.charger{padding:11px}.charger h3{font-size:.96rem}}
 @media print{.view[hidden]{display:block!important}.tabbar,.actions,.maps-search,.voice-btn{display:none!important}details{display:block}.card{box-shadow:none;break-inside:avoid}body{background:white}}
 input:invalid{border-color:#ac4338}button:focus-visible,a:focus-visible{outline:3px solid #dba529;outline-offset:3px}
 /* Google's documented prediction-list part: keep the list scrollable on Mac. */
@@ -48,7 +48,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 </head>
 <body>
 <header><div><h1>🚙 Volvo Reisplanner</h1><p>Afstand • elektrische kilometers • kosten • Type 2-laadpalen</p></div></header>
-<nav class="tabbar" aria-label="Schermen"><button type="button" data-tab="route" class="active">🚗 Route</button><button type="button" data-tab="ritstand">🔊 Ritstand</button><button type="button" data-tab="alternatief">📍 Andere paal</button><button type="button" data-tab="laden">⚡ Laden</button><button type="button" data-tab="kosten">💶 Kosten</button><button type="button" data-tab="meer">⚙️ Meer</button></nav>
+<nav class="tabbar" aria-label="Schermen"><button type="button" data-tab="route" class="active">🚗 Route</button><button type="button" data-tab="ritstand">🔊 Ritstand</button><button type="button" data-tab="alternatief">📍 Andere paal</button><button type="button" data-tab="laden">⚡ Laden</button><button type="button" data-tab="kosten">💶 Kosten</button><button type="button" data-tab="meer">⚙️ Meer</button><button type="button" data-tab="handleiding">📖 Handleiding</button></nav>
 <main>
 <div class="view" data-view="ritstand" hidden><section class="card"><h2>Ritstand — beschikbaarheid van mijn laadpaal</h2><p class="muted">Kies eerst onder Laden een laadpaal met <b>Dit is mijn keuze</b>. Start daarna vóór vertrek deze ritstand. Rond 2 km <b>rijafstand naar die laadpaal</b> controleert de planner de NDW-beschikbaarheid en spreekt uit: vrij gemeld, niet vrij gemeld of niet te bevestigen. Een gewijzigde status kan vóór aankomst opnieuw worden gemeld.</p><p id="rideTarget" class="status" role="status">Nog geen laadpaal gekozen.</p><div class="actions"><button id="rideStart" type="button">▶ Start aankomstmelding vóór vertrek</button><button id="rideStop" type="button" class="secondary" disabled>■ Stop ritstand</button><button id="rideSound" type="button" class="secondary">Test gesproken melding</button></div><p id="rideStatus" class="status" role="status">Ritstand uit. Geen locatievolging actief.</p><p class="muted">Dit controleert uitsluitend jouw gekozen laadlocatie; het laadadvies blijft onder Kosten. NDW telt vrije AC Type 2-aansluitingen per locatie en bevestigt niet welke aansluiting vrij is. Bij ontbrekende gegevens, een verbindingsfout of een status ouder dan 15 minuten volgt geen onbevestigd ja/nee. De melding reserveert geen plek.</p><p class="muted">Werkt alleen met deze pagina zichtbaar en de telefoon ontgrendeld. De planner probeert het scherm wakker te houden. Je locatie wordt voor rijafstand met Google gedeeld; NDW krijgt een gebiedsvraag rond de gekozen laadpaal. Er wordt geen GPS-ritgeschiedenis bewaard. Voor de iPhone is een bereikbare HTTPS-versie nodig; het lokale Mac-adres werkt daar niet.</p><div id="rideResults"></div></section></div><div class="view" data-view="route"><section class="card"><h2>Route</h2><div class="grid">
 <div class="wide"><label for="origin">Vertrekadres</label><div class="address-entry"><input id="origin" value="Waterjufferstraat 4, Beekbergen" autocomplete="street-address" enterkeyhint="done"><button type="button" id="voiceOrigin" class="secondary voice-btn" aria-label="Vertrekadres dicteren">🎤</button></div></div>
@@ -104,6 +104,42 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 </section>
 <div class="actions"><button id="print" class="secondary">Afdrukken / PDF</button></div>
 <details class="info"><summary>Bestemming naar je Volvo</summary><p class="muted">Open de bestemming in Google Maps op je telefoon. Bij een ondersteunde auto en account kan ‘Naar auto sturen’ beschikbaar zijn. De reisplanner kan ontvangst door de auto niet bevestigen. Bij Sensus Navigation kun je de bestemming in de Volvo Cars-app zoeken en ‘Send to car’ gebruiken. Beschikbaarheid hangt af van model, software en diensten. Gebruik Delen/kopiëren om het adres over te nemen.</p><a href="https://www.volvocars.com/uk/support/topic/c7bac0678accca8bc0a80151259ca619/" target="_blank" rel="noopener noreferrer">Volvo-instructies</a></details>
+</div>
+<div class="view" data-view="handleiding" hidden>
+<section class="card">
+<h2>Handleiding Volvo Reisplanner</h2>
+<h3>Snel aan de slag</h3>
+<ol>
+<li><strong>Route.</strong> Kies vertrek en bestemming en laat Google Maps de kilometers berekenen.</li>
+<li><strong>Laden.</strong> Vul de verwachte laadsessie in, zoek laadpalen en tik bij je keuze op <strong>Dit is mijn keuze</strong>.</li>
+<li><strong>Kosten.</strong> Bekijk de ritraming en het advies of bijladen voordeliger is dan op benzine rijden.</li>
+<li><strong>Ritstand.</strong> Start vóór vertrek als je een melding over je gekozen laadpaal wilt.</li>
+</ol>
+<p class="muted">Eerste keer op dit apparaat? Verbind Google Maps onder <strong>Meer</strong> met je eigen sleutel.</p>
+<details class="info"><summary>Route, adressen en dicteren</summary>
+<p>Kies een adres uit de Google-resultaten. Op je iPhone brengt 🎤 je naar het zoekveld. Tik daarna op de microfoon van je toetsenbord. Tik op <strong>Zoek adres</strong> en veeg door de lijst of gebruik <strong>Meer adressen ↓</strong>. Je kunt heen- en terugkilometers ook zelf invullen.</p>
+<p>Stel het elektrische bereik bij vertrek en het extra bereik na laden in. Onderaan Route zet <strong>Invoer herstellen</strong> de route-, laad- en kosteninvoer terug op de standaardwaarden. Je adresboek en Google Maps-sleutel blijven bewaard.</p>
+</details>
+<details class="info"><summary>Laadpalen zoeken en kiezen</summary>
+<p>Vul het laadvolume in onder <strong>Laden</strong>. Onder <strong>Laadduur, btw en bijkomende kosten</strong> kun je de laadduur en de totale aangesloten tijd instellen. Tik op <strong>Zoek / ververs laadpalen</strong>. De planner zoekt Type 2-locaties met een berekende looproute tot 500 meter.</p>
+<p>Vergelijk de geschatte sessieprijs en het tijdstip van de NDW-status. Tik op <strong>Dit is mijn keuze</strong> om de laadpaal te bewaren en een beschikbaar tarief over te nemen. Een onbekende prijs of bezetting blijft onzeker. Controleer Shuttel-acceptatie en het Shuttel-tarief apart.</p>
+</details>
+<details class="info"><summary>Ritkosten en laadadvies</summary>
+<p>Onder <strong>Kosten</strong> kun je stroomprijs, benzineprijs en verbruik aanpassen. De standaard voor elektrisch verbruik is <strong>14,8 kWh/100 km</strong>. Bij benzine staat de Euro 95-dagprijs voor Apeldoorn buiten de snelweg, met de datum van de berekening. Tik op <strong>Gebruik dagprijs Apeldoorn</strong> om na een eigen invoer weer automatisch de dagprijs te volgen.</p>
+<p>Het advies vergelijkt de geschatte kosten met en zonder bijladen. Controleer het gekozen laadvolume, de extra elektrische kilometers en de eventuele parkeerkosten voor je de bedragen vergelijkt.</p>
+</details>
+<details class="info"><summary>Ritstand, andere paal en Volvo</summary>
+<p>Kies eerst een laadpaal onder <strong>Laden</strong>. Start <strong>Ritstand</strong> vóór vertrek en houd de planner zichtbaar op een ontgrendeld toestel. Rond 2 km rijafstand krijg je een gesproken melding over de gemelde beschikbaarheid.</p>
+<p>Bij een bezetmelding kan onder <strong>Andere paal</strong> één alternatief verschijnen. Open dat stilstaand in Google Maps. Kies op je iPhone <strong>Naar auto sturen</strong> als Google Maps die optie voor je Volvo aanbiedt.</p>
+</details>
+<details class="info"><summary>Parkeren met EasyPark</summary>
+<p>Open bij de laadpaal <strong>Parkeren met EasyPark</strong>. Controleer de zone en betaaluren voor je geplande datum en hele parkeertijdvak. Is de hele periode gratis, kies dan <strong>Gecontroleerd: gratis parkeren</strong>. Vul anders het totale parkeerbedrag in.</p>
+<p>Voor de knop <strong>Open EasyPark-app</strong> maak je op je iPhone één keer in <strong>Opdrachten</strong> een opdracht met de naam <strong>Open EasyPark</strong>. Voeg de actie <strong>Open app</strong> toe en kies EasyPark. Bij aankomst controleer je in EasyPark de zone van je werkelijke parkeerplek.</p>
+</details>
+<details class="info"><summary>Adresboek, instellingen en je iPhone</summary>
+<p>Onder <strong>Meer</strong> kun je adressen bewaren of een vCard-bestand met Apple-contacten importeren. Gebruik op je iPhone hetzelfde beginschermicoon of dezelfde browser om je opgeslagen instellingen te behouden. Sluit en heropen de planner als een nieuwe versie nog niet verschijnt.</p>
+</details>
+</section>
 </div></main>
 <script src="planner-core.js"></script>
 <script src="ride-mode.js"></script>
