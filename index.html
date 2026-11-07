@@ -51,7 +51,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <nav class="tabbar" aria-label="Schermen"><button type="button" data-tab="route" class="active">🚗 Route</button><button type="button" data-tab="ritstand">🔊 Ritstand</button><button type="button" data-tab="alternatief">📍 Andere paal</button><button type="button" data-tab="laden">⚡ Laden</button><button type="button" data-tab="kosten">💶 Kosten</button><button type="button" data-tab="meer">⚙️ Meer</button><button type="button" data-tab="handleiding">📖 Handleiding</button></nav>
 <main>
 <div class="view" data-view="ritstand" hidden><section class="card"><h2>Ritstand — beschikbaarheid van mijn laadpaal</h2><p class="muted">Kies eerst onder Laden een laadpaal met <b>Dit is mijn keuze</b>. Start daarna vóór vertrek deze ritstand. Rond 2 km <b>rijafstand naar die laadpaal</b> controleert de planner de NDW-beschikbaarheid en spreekt uit: vrij gemeld, niet vrij gemeld of niet te bevestigen. Een gewijzigde status kan vóór aankomst opnieuw worden gemeld.</p><p id="rideTarget" class="status" role="status">Nog geen laadpaal gekozen.</p><div class="actions"><button id="rideStart" type="button">▶ Start aankomstmelding vóór vertrek</button><button id="rideStop" type="button" class="secondary" disabled>■ Stop ritstand</button><button id="rideSound" type="button" class="secondary">Test gesproken melding</button></div><p id="rideStatus" class="status" role="status">Ritstand uit. Geen locatievolging actief.</p><p class="muted">Dit controleert uitsluitend jouw gekozen laadlocatie; het laadadvies blijft onder Kosten. NDW telt vrije AC Type 2-aansluitingen per locatie en bevestigt niet welke aansluiting vrij is. Bij ontbrekende gegevens, een verbindingsfout of een status ouder dan 15 minuten volgt geen onbevestigd ja/nee. De melding reserveert geen plek.</p><p class="muted">Werkt alleen met deze pagina zichtbaar en de telefoon ontgrendeld. De planner probeert het scherm wakker te houden. Je locatie wordt voor rijafstand met Google gedeeld; NDW krijgt een gebiedsvraag rond de gekozen laadpaal. Er wordt geen GPS-ritgeschiedenis bewaard. Voor de iPhone is een bereikbare HTTPS-versie nodig; het lokale Mac-adres werkt daar niet.</p><div id="rideResults"></div></section></div><div class="view" data-view="route"><section class="card"><h2>Route</h2><div class="grid">
-<div class="wide"><label for="origin">Vertrekadres</label><div class="address-entry"><input id="origin" value="Waterjufferstraat 4, Beekbergen" autocomplete="street-address" enterkeyhint="done"><button type="button" id="voiceOrigin" class="secondary voice-btn" aria-label="Vertrekadres dicteren">🎤</button></div></div>
+<div class="wide"><label for="origin">Vertrekadres</label><div class="address-entry"><input id="origin" value="" autocomplete="street-address" enterkeyhint="done"><button type="button" id="voiceOrigin" class="secondary voice-btn" aria-label="Vertrekadres dicteren">🎤</button></div></div>
 <div class="wide"><label for="destination">Bestemming (adres)</label><div class="address-entry"><input id="destination" placeholder="Bijv. Cuijkstraat 3, Amersfoort" enterkeyhint="done"><button type="button" id="voiceDestination" class="secondary voice-btn" aria-label="Bestemming dicteren">🎤</button></div></div>
 <div><label for="outkm">Heenreis (km)</label><input id="outkm" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.1" placeholder="Via Google Maps"></div>
 <div><label for="backkm">Terugreis (km)</label><input id="backkm" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.1" placeholder="Via Google Maps"></div>
@@ -73,7 +73,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 </div><div class="view" data-view="kosten" hidden><section class="card"><h2>Kostenberekening</h2><div class="grid">
 <div><label for="homePrice">Thuisstroom €/kWh</label><input id="homePrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.26836"></div>
 <div><label for="petrolPrice">Benzine €/liter</label><input id="petrolPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="2,120"><p id="petrolStatus" class="muted" role="status"></p><button id="petrolAuto" type="button" class="secondary">Gebruik dagprijs Apeldoorn</button></div>
-<div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="14,8"></div>
+<div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="14,8"><button id="resetElectricUse" type="button" class="secondary">Gebruik standaard 14,8</button></div>
 <div><label for="fuelUse">Benzine liter/100 km</label><input id="fuelUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="8"></div>
 <div><label for="publicPrice">Openbaar tarief €/kWh</label><input id="publicPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.555"></div>
 <div><label for="startFee">Start-/extra kosten (€)</label><input id="startFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div>
@@ -89,13 +89,13 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <div class="grid"><div class="wide"><label for="sessionMode">Welke laadkosten tellen mee?</label><select id="sessionMode"><option value="used">Alleen stroom die je tijdens deze rit verbruikt</option><option value="full">Alles wat je bij de laadpaal betaalt (aanbevolen)</option></select></div></div><div id="chargingAdvice" class="status" role="status" aria-live="polite"></div><p class="muted">Laadadvies vergelijkt dezelfde rit zonder bijladen met de volledige laadsessie uit Laden. Alleen benzine die je tijdens deze rit bespaart telt mee; resterende geladen energie krijgt hier geen waarde. Start-/extra kosten uit Kosten tellen mee, inclusief overgenomen NDW-tijdkosten. Onbekende Shuttel- en parkeerkosten kunnen het advies veranderen.</p><p id="tariffSummary" class="muted"></p><p id="sessionSummary" class="muted"></p><p class="muted">Vereenvoudigde kostenraming; werkelijke hybride aandrijving kan afwijken. De gekozen kostenmethode bepaalt of niet-verbruikte geladen energie wordt meegerekend.</p>
 </section>
 </div><div class="view" data-view="alternatief" hidden><section class="card"><h2>Andere laadpaal</h2><p id="alternativeStatus" class="status" role="status">Als jouw gekozen laadpaal rond aankomst bezet wordt gemeld, zoek ik hier één vrije andere laadlocatie.</p><div id="alternativeResult"></div><p class="muted">Open de nieuwe laadpaal in Google Maps op je iPhone. Gebruik daar Naar auto sturen als die optie beschikbaar is. De planner kan ontvangst in de Volvo niet bevestigen. Bedien dit alleen wanneer je stilstaat of laat een passagier helpen. Vrij gemeld is geen reservering.</p></section></div><div class="view" data-view="laden" hidden><section class="card"><h2>Laadpalen bij bestemming</h2><p id="chosenChargerSummary" class="status hidden" role="status"></p>
-<div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0.1" max="200" step="0.5" value="10"></div></div><details class="info"><summary>⚙️ Laadduur, btw en bijkomende kosten</summary><div class="grid"><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale aangesloten tijd incl. laden (minuten)</label><input id="parkingMinutes" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten (€)</label><input id="parkingFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur. PARKING_TIME geldt alleen voor aangesloten tijd zonder laden (totale aangesloten tijd min laadduur).</p></details>
+<div class="grid"><div><label for="chargeKwh">Te laden energie (kWh)</label><input id="chargeKwh" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0.1" max="200" step="0.5" value="10"></div></div><details class="info"><summary>⚙️ Laadduur, btw en bijkomende kosten</summary><div class="grid"><div><label for="chargeMinutes">Verwachte laadduur (minuten)</label><input id="chargeMinutes" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1440" step="5" value="60"></div><div><label for="parkingMinutes">Totale aangesloten tijd incl. laden (minuten)</label><input id="parkingMinutes" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1440" step="5" value="90"></div><div><label for="vatMode">NDW-btw-behandeling</label><select id="vatMode"><option value="exclusive">OCPI-aanname: prijs exclusief btw</option><option value="inclusive">Prijs is al inclusief btw</option></select></div><div><label for="shuttelFee">Eventuele Shuttel-startkosten (€)</label><input id="shuttelFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div><div><label for="shuttelMarkup">Eventuele Shuttel-opslag (€/kWh)</label><input id="shuttelMarkup" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0"></div><div><label for="parkingFee">Overige parkeerkosten voor handmatige ritraming (€)</label><input id="parkingFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div></div><p class="muted">Btw: standaard OCPI-aanname exclusief btw, niet onafhankelijk bevestigd voor NDW. Shuttel- en parkeerkosten staan standaard op € 0 omdat ze onbekend zijn, niet omdat ze zeker gratis zijn. Tijdkosten worden geschat op basis van ingevulde duur. PARKING_TIME geldt alleen voor aangesloten tijd zonder laden (totale aangesloten tijd min laadduur).</p></details>
 <div class="actions"><button id="refresh">🔄 Zoek / ververs laadpalen</button></div>
 <div id="dataFreshness" class="status" role="status">Nog niet gecontroleerd. Rechtstreekse NDW-status wordt geprobeerd; bij een verbindingsfout verschijnt een waarschuwing.</div>
 <p class="muted">Voor vertrek: controle op NDW-status, ouderdom en je eigen meldingen. Fysieke aanwezigheid kan niet automatisch worden bevestigd.</p>
 <div id="chargeStatus" class="status" role="status">Verbind Google Maps onder Meer en zoek laadpalen.</div>
-<p class="status">Shuttel-acceptatie en Shuttel-eindprijzen zijn niet geverifieerd. Gemeentelijk parkeergeld is niet geverifieerd. Onbekende kosten zijn geen bevestiging van gratis laden of parkeren.</p><div id="chargers"></div><div id="unknownChargers"></div>
-<details class="info"><summary>ℹ️ Over de laadpaalgegevens</summary><p class="muted">Volgorde: laagste berekenbare totale NDW-laadkosten, bij gelijke prijs kortste loopafstand. Alleen bevestigde looproutes van maximaal 500 m. Top 3 op berekenbare sessieprijs; overige locaties met onbekende of complexe tarieven staan apart en kunnen goedkoper zijn. NDW is geen garantie voor Shuttel-acceptatie of Shuttel-eindprijs; btw, beschikbaarheid bij aankomst en gemeentelijke parkeerkosten zijn niet bevestigd.</p></details>
+<p class="status">De planner heeft geen bevestigd actueel Shuttel-tarief of bevestigde Shuttel-acceptatie. Bekijk afgerekende sessies via <a href="https://mijn.shuttel.nl/" target="_blank" rel="noopener">Mijn Shuttel</a> onder Financiën → Transacties. Gemeentelijk parkeergeld blijft apart en is niet geverifieerd.</p><div id="chargers"></div><div id="unknownChargers"></div>
+<details class="info"><summary>ℹ️ Over de laadpaalgegevens</summary><p class="muted">Volgorde: laagste bekende totaal van laden en één uur parkeren, bij gelijke prijs kortste loopafstand. Alleen bevestigde looproutes van maximaal 500 m. Locaties met onbekende parkeerkosten volgen als voorlopige laadprijzen. NDW is geen garantie voor Shuttel-acceptatie of Shuttel-eindprijs; btw, beschikbaarheid bij aankomst en gemeentelijke parkeerkosten zijn niet bevestigd.</p></details>
 </section>
 </div><div class="view" data-view="meer" hidden><section class="card"><h2>Google Maps instellen</h2><div class="grid"><div class="wide"><label for="apiKey">Google Maps API-sleutel</label><input id="apiKey" type="password" placeholder="Plak hier op je eigen apparaat de sleutel" autocomplete="off"></div></div>
 <div class="actions"><button id="connect">Google Maps verbinden</button><button id="clearKey" class="secondary">Sleutel wissen</button></div>
@@ -111,7 +111,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <h3>Snel aan de slag</h3>
 <ol>
 <li><strong>Route.</strong> Kies vertrek en bestemming en laat Google Maps de kilometers berekenen.</li>
-<li><strong>Laden.</strong> Vul de verwachte laadsessie in, zoek laadpalen en tik bij je keuze op <strong>Dit is mijn keuze</strong>.</li>
+<li><strong>Laden.</strong> Vul de verwachte laadsessie in, zoek recent vrij gemelde laadpalen, vergelijk laden plus één uur parkeren en tik bij je keuze op <strong>Dit is mijn keuze</strong>.</li>
 <li><strong>Kosten.</strong> Bekijk de ritraming en het advies of bijladen voordeliger is dan op benzine rijden.</li>
 <li><strong>Ritstand.</strong> Start vóór vertrek als je een melding over je gekozen laadpaal wilt.</li>
 </ol>
@@ -122,10 +122,10 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 </details>
 <details class="info"><summary>Laadpalen zoeken en kiezen</summary>
 <p>Vul het laadvolume in onder <strong>Laden</strong>. Onder <strong>Laadduur, btw en bijkomende kosten</strong> kun je de laadduur en de totale aangesloten tijd instellen. Tik op <strong>Zoek / ververs laadpalen</strong>. De planner zoekt Type 2-locaties met een berekende looproute tot 500 meter.</p>
-<p>Vergelijk de geschatte sessieprijs en het tijdstip van de NDW-status. Tik op <strong>Dit is mijn keuze</strong> om de laadpaal te bewaren en een beschikbaar tarief over te nemen. Een onbekende prijs of bezetting blijft onzeker. Controleer Shuttel-acceptatie en het Shuttel-tarief apart.</p>
+<p>De planner vraagt bij elke zoekopdracht opnieuw de NDW-status op. Alleen een melding van hoogstens 15 minuten oud telt mee als vrij. Een vrije aansluiting kan vóór aankomst bezet raken. Vergelijk laden plus één uur parkeren en tik op <strong>Dit is mijn keuze</strong> om het beschikbare tarief en het ingevulde parkeerbedrag mee te nemen naar <strong>Kosten</strong>. Controleer de actuele Shuttel-prijs en acceptatie apart.</p>
 </details>
 <details class="info"><summary>Ritkosten en laadadvies</summary>
-<p>Onder <strong>Kosten</strong> kun je stroomprijs, benzineprijs en verbruik aanpassen. De standaard voor elektrisch verbruik is <strong>14,8 kWh/100 km</strong>. Bij benzine staat de Euro 95-dagprijs voor Apeldoorn buiten de snelweg, met de datum van de berekening. Tik op <strong>Gebruik dagprijs Apeldoorn</strong> om na een eigen invoer weer automatisch de dagprijs te volgen.</p>
+<p>Onder <strong>Kosten</strong> kun je stroomprijs, benzineprijs en verbruik aanpassen. De standaard voor elektrisch verbruik is <strong>14,8 kWh/100 km</strong>. Je kunt het verbruik aanpassen en later met <strong>Gebruik standaard 14,8</strong> terugzetten. Bij benzine staat de Euro 95-dagprijs voor Apeldoorn buiten de snelweg, met de datum van de berekening. Tik op <strong>Gebruik dagprijs Apeldoorn</strong> om na een eigen invoer weer automatisch de dagprijs te volgen.</p>
 <p>Het advies vergelijkt de geschatte kosten met en zonder bijladen. Controleer het gekozen laadvolume, de extra elektrische kilometers en de eventuele parkeerkosten voor je de bedragen vergelijkt.</p>
 </details>
 <details class="info"><summary>Ritstand, andere paal en Volvo</summary>
@@ -133,7 +133,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <p>Bij een bezetmelding kan onder <strong>Andere paal</strong> één alternatief verschijnen. Open dat stilstaand in Google Maps. Kies op je iPhone <strong>Naar auto sturen</strong> als Google Maps die optie voor je Volvo aanbiedt.</p>
 </details>
 <details class="info"><summary>Parkeren met EasyPark</summary>
-<p>Open bij de laadpaal <strong>Parkeren met EasyPark</strong>. Controleer de zone en betaaluren voor je geplande datum en hele parkeertijdvak. Is de hele periode gratis, kies dan <strong>Gecontroleerd: gratis parkeren</strong>. Vul anders het totale parkeerbedrag in.</p>
+<p>Open bij de laadpaal <strong>Parkeren met EasyPark</strong>. Controleer de zone en betaaluren voor de geplande datum en het volledige uur, inclusief afwijkingen op zondag of feestdagen. Vul het bedrag voor één uur in en tik op <strong>Vergelijk opnieuw met dit bedrag</strong>. Gebruik 0 als het hele uur gratis is. Laat het veld leeg als het tarief onbekend is. Laadpalen met een bekend totaal staan bovenaan. De planner haalt parkeertarieven nog niet automatisch op.</p>
 <p>Voor de knop <strong>Open EasyPark-app</strong> maak je op je iPhone één keer in <strong>Opdrachten</strong> een opdracht met de naam <strong>Open EasyPark</strong>. Voeg de actie <strong>Open app</strong> toe en kies EasyPark. Bij aankomst controleer je in EasyPark de zone van je werkelijke parkeerplek.</p>
 </details>
 <details class="info"><summary>Adresboek, instellingen en je iPhone</summary>
@@ -176,8 +176,10 @@ function updateChosenCharger(){
  summary.textContent=(same?'Mijn keuze: ':'Vorige keuze bij een andere bestemming: ')+chosenCharger.name+'. '+(same?(chosenCharger.priced?'Tarief gekoppeld aan de ritkosten.':'Tarief onbekend; vul de openbare kosten handmatig in.'):'Zoek laadpalen voor je huidige bestemming.');
  for(const item of chargerChoiceControls){const selected=same&&item.key===chosenCharger.key;item.card.classList.toggle('chosen',selected);item.button.textContent=selected?'✓ Dit is mijn keuze':'Dit is mijn keuze';item.button.setAttribute('aria-pressed',String(selected))}
 }
+const parkingByCharger=new Map();
+const parkingKey=x=>JSON.stringify([$('destination').value.trim(),reportKey(x)]);
 function useChargerTariff(x){
- appliedTariff={key:x.tariff.tariffKey,definition:x.tariffDefinitions[x.tariff.tariffKey],savedAt:new Date().toISOString()};
+ appliedTariff={key:x.tariff.tariffKey,definition:x.tariffDefinitions[x.tariff.tariffKey],parkingForHour:x.parkingForHour??null,savedAt:new Date().toISOString()};
  try{localStorage.setItem('volvo-planner-tariff-v1',JSON.stringify(appliedTariff))}catch(e){}
  $('sessionMode').value='full';
 }
@@ -282,7 +284,7 @@ function updateRouteTotal(){const out=n('outkm'),back=n('backkm');$('routeTotal'
 function invalidNumbers(){return fields.filter(id=>$(id).getAttribute('inputmode')==='decimal'&&$(id).value!==''&&!/^(?:[0-9]+(?:[.,][0-9]*)?|[.,][0-9]+)$/.test($(id).value.trim()))}
 function calc(){
  updateChosenCharger();updateRouteTotal();checkRangeWarning();
- if(appliedTariff){const price=basicPrice(appliedTariff.definition,n('chargeKwh'));if(price){$('publicPrice').value=((price.components.ENERGY?.gross||0)/n('chargeKwh')+n('shuttelMarkup')).toFixed(8);$('startFee').value=(price.flat+price.time+price.parking+n('shuttelFee')+n('parkingFee')).toFixed(8);$('tariffSummary').textContent='Gekoppeld NDW-tarief '+appliedTariff.key+'; sessievolume en tijdkosten worden opnieuw berekend. Prijsmomentopname: '+appliedTariff.savedAt+'. Ververs voor vertrek.'+(price.tariffType==='AD_HOC_PAYMENT'?' Dit is een tarief voor direct betalen; Shuttel-eindprijs niet bevestigd.':'')}else{$('tariffSummary').textContent='⚠️ Het gekoppelde tarief kan niet meer worden berekend. Zoek opnieuw of voer handmatig een tarief in.';}}else $('tariffSummary').textContent='Handmatig openbaar tarief; controleer start- en tijdkosten.';
+ if(appliedTariff){const price=basicPrice(appliedTariff.definition,n('chargeKwh'));if(price){$('publicPrice').value=((price.components.ENERGY?.gross||0)/n('chargeKwh')+n('shuttelMarkup')).toFixed(8);$('startFee').value=(price.flat+price.time+price.parking+n('shuttelFee')+(appliedTariff.parkingForHour===undefined?n('parkingFee'):appliedTariff.parkingForHour??0)).toFixed(8);$('tariffSummary').textContent='Gekoppeld NDW-tarief '+appliedTariff.key+'; sessievolume en tijdkosten worden opnieuw berekend. '+(appliedTariff.parkingForHour===null?'Parkeerkosten voor één uur zijn onbekend en ontbreken in de ritraming. ':Number.isFinite(appliedTariff.parkingForHour)?'Parkeren (1 uur): '+money(appliedTariff.parkingForHour)+'. ':'')+'Prijsmomentopname: '+appliedTariff.savedAt+'. Ververs voor vertrek.'+(price.tariffType==='AD_HOC_PAYMENT'?' Dit is een tarief voor direct betalen; Shuttel-eindprijs niet bevestigd.':'')}else{$('tariffSummary').textContent='⚠️ Het gekoppelde tarief kan niet meer worden berekend. Zoek opnieuw of voer handmatig een tarief in.';}}else $('tariffSummary').textContent='Handmatig openbaar tarief; controleer start- en tijdkosten.';
  const v=Object.fromEntries(fields.map(id=>[id,$(id).value]));
  if(!appliedTariff&&Number.isFinite(PlannerCore.number(v.startFee))&&Number.isFinite(PlannerCore.number(v.parkingFee)))v.startFee=PlannerCore.number(v.startFee)+PlannerCore.number(v.parkingFee);
  const {out,back,home,extra,petrolKm,hc,cc,pc,sessionKwh}=PlannerCore.trip(v);
@@ -400,8 +402,11 @@ async function walkingDistance(start,end){
  const response=await routeClass.computeRoutes({origin:start,destination:end,travelMode:'WALKING',fields:['distanceMeters']});
  const meters=response.routes?.[0]?.distanceMeters;return Number.isFinite(meters)?meters:null;
 }
+function showOperator(card,point){
+ addText(card,'p','Exploitant: '+(point.exploitant||'onbekend'),'muted');
+}
 // Historische zakelijke Shuttel-transacties 2026; Beekbergen uitgesloten. Alleen positieve laadkosten.
-const shuttelHistory=[{"street":"Piet van Donkplein 1","city":"Deventer","sessions":1,"kwh":6.382,"cost":2.84,"last":"2026-01-17"},{"street":"Nieuwe Markt 3a","city":"Barneveld","sessions":4,"kwh":28.471,"cost":16.61,"last":"2026-06-27"},{"street":"Bastion 73","city":"Veenendaal","sessions":1,"kwh":11.84,"cost":7.47,"last":"2026-03-11"},{"street":"Liendertseweg 37","city":"Amersfoort","sessions":1,"kwh":9.611,"cost":6.48,"last":"2026-03-21"},{"street":"Noorderstraat 11","city":"Gouda","sessions":2,"kwh":20.399,"cost":9.38,"last":"2026-06-04"},{"street":"Verzetsplein 4","city":"Amersfoort","sessions":1,"kwh":10.055,"cost":6.84,"last":"2026-04-18"},{"street":"Parkstraat 14","city":"Gouda","sessions":1,"kwh":8.27,"cost":3.1,"last":"2026-04-19"},{"street":"Cambridgelaan 0","city":"Utrecht","sessions":1,"kwh":13.15,"cost":5.680000000000001,"last":"2026-06-19"},{"street":"Opijnenstraat 25","city":"Hoogland","sessions":1,"kwh":9.12,"cost":6.119999999999999,"last":"2026-06-21"},{"street":"Joseph Haydnlaan2A","city":"Utrecht","sessions":1,"kwh":0.573,"cost":0.25,"last":"2026-07-18"},{"street":"Hendrika van Tussenbroeklaan 3","city":"Utrecht","sessions":1,"kwh":12.31,"cost":6.7,"last":"2026-07-18"},{"street":"Burgm. G.R. Vonklaan 4","city":"Bodegraven","sessions":4,"kwh":47.365,"cost":29.880000000000003,"last":"2026-10-29"},{"street":"De Violieren 16","city":"Apeldoorn","sessions":2,"kwh":2.06,"cost":0.8799999999999999,"last":"2026-09-21"},{"street":"2 Kruisboog","city":"Houten","sessions":1,"kwh":16.41,"cost":8.129999999999999,"last":"2026-10-02"},{"street":"Heereweg403","city":"Schoorl","sessions":1,"kwh":16.206,"cost":16.95,"last":"2026-10-09"},{"street":"Heereweg395","city":"Schoorl","sessions":1,"kwh":7.035,"cost":9.08,"last":"2026-10-10"},{"street":"Nico Bolkesteinlaan 75","city":"DEVENTER","sessions":1,"kwh":4.005,"cost":1.98,"last":"2026-10-14"},{"street":"Van Heutszstraat 29","city":"Den Haag","sessions":1,"kwh":15.501,"cost":7.36,"last":"2026-10-25"}];
+const shuttelHistory=[];
 function locationKey(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
 function historicalShuttel(p){
  const street=locationKey(p.adres),city=locationKey(p.plaats);
@@ -410,7 +415,7 @@ function historicalShuttel(p){
 }
 const ndwBase='data/laadpunten/';
 async function readJson(url){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Kan '+url+' niet ophalen (HTTP '+r.status+').');return r.json()}
-function basicPrice(tariff,kwh){return PlannerCore.tariff(tariff,kwh,{chargeMinutes:n('chargeMinutes'),parkingMinutes:n('parkingMinutes'),vatMode:$('vatMode').value,shuttelFee:n('shuttelFee'),shuttelMarkup:n('shuttelMarkup'),parkingFee:n('parkingFee')})}
+function basicPrice(tariff,kwh){return PlannerCore.tariff(tariff,kwh,{chargeMinutes:n('chargeMinutes'),parkingMinutes:n('parkingMinutes'),vatMode:$('vatMode').value,shuttelFee:n('shuttelFee'),shuttelMarkup:n('shuttelMarkup'),parkingFee:0})}
 function bestPrice(point,tariffs,kwh){
  const options=[];
  for(const connector of point.aansluitingen||[]){
@@ -441,26 +446,25 @@ async function nearbyNdw(dest,radius=500,reader=readJson){
  return {points:[...points.values()],updated:index.bijgewerkt};
 }
 // Rechtstreekse NDW GeoJSON-status; deze interface geeft aantallen vrij/totaal per laadlocatie.
-// De browser kan de verbinding blokkeren (CORS). Dan gebruiken we alleen de oude
-// momentopname, met een expliciete waarschuwing en NOOIT een groene live-indicatie.
+// De lokale startserver stuurt de statusaanvraag door voor browsers die NDW blokkeren.
 const liveNdwEndpoint='https://dotnl.ndw.nu/api/rest/geojson/dynamic-road-status/charge-point-data/v1/features';
 async function directNdw(dest){
  const latRadius=0.009,lonRadius=0.016;
  const bbox=[dest.lng-lonRadius,dest.lat-latRadius,dest.lng+lonRadius,dest.lat+latRadius].map(v=>v.toFixed(6)).join(',');
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
  try{
-  const r=await fetch(liveNdwEndpoint+'?bbox='+encodeURIComponent(bbox),{cache:'no-store',signal:controller.signal});
+  const endpoint=location.hostname==='127.0.0.1'&&location.port==='8788'?'/__volvo_ndw':liveNdwEndpoint;
+  const r=await fetch(endpoint+'?bbox='+encodeURIComponent(bbox),{cache:'no-store',signal:controller.signal});
   if(!r.ok)throw Error('NDW HTTP '+r.status);
   const data=await r.json();
   if(data.type!=='FeatureCollection'||!Array.isArray(data.features))throw Error('Onverwacht NDW-antwoord');
   return data.features.filter(f=>f?.geometry?.type==='Point'&&Array.isArray(f.geometry.coordinates)&&Array.isArray(f.properties?.availabilities));
  }finally{clearTimeout(timer)}
 }
-function directAvailability(feature){
- const ac=feature.properties.availabilities.filter(a=>a.connector_type==='IEC_62196_T2'&&String(a.power_type||'').startsWith('AC'));
- return {free:ac.reduce((n,a)=>n+Math.max(0,Number(a.available)||0),0),total:ac.reduce((n,a)=>n+Math.max(0,Number(a.total)||0),0),updated:feature.properties.last_updated};
-}
 function matchDirect(x,features){
+ const id=String(x.p?.id||'');
+ const exact=id&&features.find(f=>f.id===id||f.id==='NL-'+f.properties.cpo_id+'-'+id);
+ if(exact){const [lng,lat]=exact.geometry.coordinates;if(haversine(x.coords,{lat,lng})<=30)return exact}
  let closest=null,distance=Infinity;
  for(const f of features){const [lng,lat]=f.geometry.coordinates;if(!Number.isFinite(lat)||!Number.isFinite(lng))continue;
   const d=haversine(x.coords,{lat,lng});if(d<distance){distance=d;closest=f}}
@@ -531,16 +535,16 @@ $('refresh').onclick=async()=>{
    const coords={lat,lng};if(haversine(dest,coords)>500)continue;
    if(points.some(x=>haversine(x.coords,coords)<=30))continue;
    const id=String(f.id||lat+','+lng);
-   points.push({p:{id,naam:f.properties.address||'NDW-laadlocatie',adres:f.properties.address||'',plaats:'',aansluitingen:[]},coords,straight:haversine(dest,coords),tariff:null,sourceFile:'rechtstreeks NDW',tariffKeys:[],unknownTariffs:true,tariffDefinitions:{}});
+   points.push({p:{id,naam:f.properties.address||'NDW-laadlocatie',adres:f.properties.address||'',plaats:'',exploitant:f.properties.operator_name?.trim(),aansluitingen:[]},coords,straight:haversine(dest,coords),tariff:null,sourceFile:'rechtstreeks NDW',tariffKeys:[],unknownTariffs:true,tariffDefinitions:{}});
   }
-  for(const x of points){const f=liveOk?matchDirect(x,liveFeatures):null;x.direct=f?directAvailability(f):null;}
+  for(const x of points){const f=liveOk?matchDirect(x,liveFeatures):null;x.direct=RideMode.readAvailability(f);}
 
   const updatedTime=Date.parse(updated);
   const datasetAgeHours=Number.isFinite(updatedTime)?Math.max(0,(Date.now()-updatedTime)/3600000):Infinity;
   const datasetTime=Number.isFinite(updatedTime)?new Date(updatedTime).toLocaleString('nl-NL'):'onbekend';
   const liveTimes=liveFeatures.map(f=>Date.parse(f.properties?.last_updated)).filter(Number.isFinite);
   const newestLive=liveTimes.length?new Date(Math.max(...liveTimes)).toLocaleString('nl-NL'):'onbekend';
-  $('dataFreshness').textContent='Controle: '+new Date().toLocaleString('nl-NL')+'. '+(liveOk?'Rechtstreekse NDW-verbinding geslaagd ('+liveFeatures.length+' locaties; nieuwste status '+newestLive+').':'⚠️ Rechtstreekse NDW-verbinding mislukt ('+(liveResult.reason?.message||'browser/netwerk')+'). Alleen oude momentopname beschikbaar.')+' Prijsbestand: '+datasetTime+'. Een status is geen garantie voor een vrije parkeerplek bij aankomst.';
+  $('dataFreshness').textContent='Controle: '+new Date().toLocaleString('nl-NL')+'. '+(liveOk?'Rechtstreekse NDW-verbinding geslaagd ('+liveFeatures.length+' locaties; nieuwste status '+newestLive+').':'⚠️ Rechtstreekse NDW-verbinding mislukt ('+(liveResult.reason?.message||'browser/netwerk')+'). Actuele bezetting onbekend.')+' Prijsbestand: '+datasetTime+'. Een status is geen garantie voor een vrije parkeerplek bij aankomst.';
   $('dataFreshness').className='status'+(liveOk?' success':'');
   if(!points.length){chargeMessage('Geen NDW-laadlocaties binnen 500 m hemelsbreed gevonden.');return}
   // Controleer alle geografische kandidaten: niet slechts de eerste 60.
@@ -558,32 +562,37 @@ $('refresh').onclick=async()=>{
   }
   const candidates=found.map(x=>{
    const report=reportFor(x);if(report?.kind==='broken'||report?.kind==='missing')return null;
-   if(liveOk){
-    if(!x.direct||x.direct.total<=0||x.direct.free<=0)return null;
-    const t=Date.parse(x.direct.updated),age=Number.isFinite(t)?(Date.now()-t)/3600000:Infinity;
-    const old=eligibleCharger(x,kwh,datasetAgeHours);
-    return {...x,tariff:old?.tariff||null,tier:age>=0&&age<=0.25?0:1,availableCount:x.direct.free,latestAvailable:Number.isFinite(t)?t:null,live:true};
-   }
-   return eligibleCharger(x,kwh,Infinity);
+   if(!liveOk&&location.hostname==='volvo-reisplanner-philip.github.io')return {...x,live:false,availabilityUnknown:true};
+   if(x.direct.state!=='available')return null;
+   const old=eligibleCharger(x,kwh,datasetAgeHours);
+   return {...x,tariff:old?.tariff||x.tariff||null,tier:0,availableCount:x.direct.free,latestAvailable:x.direct.updated,live:true};
   }).filter(Boolean);
-  const priced=candidates.filter(x=>x.tariff);
+  for(const x of candidates)x.parkingForHour=parkingByCharger.get(parkingKey(x))??null;
+  const priced=candidates.filter(x=>x.tariff&&x.parkingForHour!==null);
+  const provisional=candidates.filter(x=>x.tariff&&x.parkingForHour===null);
   if(candidates.some(x=>!x.tariff))addText($('unknownChargers'),'h3','Niet vergelijkbare tarieven — kunnen goedkoper zijn');
-  const displayed=PlannerCore.rank(candidates);
+  const byTotal=(a,b)=>(a.tariff.total+a.parkingForHour)-(b.tariff.total+b.parkingForHour)||a.walk-b.walk;
+  const displayed=[...priced.sort(byTotal),...provisional.sort((a,b)=>a.tariff.total-b.tariff.total||a.walk-b.walk),...PlannerCore.rank(candidates.filter(x=>!x.tariff))];
   if($('destination').value.trim()!==searchDestination||JSON.stringify(fields.map(id=>$(id).value))!==searchSettings)throw Error('Bestemming of instellingen gewijzigd tijdens zoeken. Zoek opnieuw.');
-  if(!displayed.length){chargeMessage((liveOk?'Geen vrije AC Type 2-aansluitingen volgens de rechtstreekse NDW-gegevens binnen 500 m lopen. Controleer de exploitant of zoek verder weg.':'Geen laadpalen met een AVAILABLE-melding binnen 500 m lopen volgens het oude prijsbestand. Rechtstreekse NDW-status is niet beschikbaar.'));return}
+  if(!displayed.length){chargeMessage(liveOk?'Geen recent vrij gemelde AC Type 2-aansluitingen bevestigd binnen 500 m lopen. Oude of ontbrekende statussen gelden als onbekend.':'Actuele bezetting onbekend: NDW-status kon niet worden opgehaald. Zoek opnieuw om te controleren.');return}
   for(const x of displayed){
    const el=document.createElement('article');el.className='charger';
     addText(el,'h3',x.p.naam||x.p.adres||'Laadlocatie');
     addText(el,'p',[x.p.adres,x.p.plaats].filter(Boolean).join(', '),'muted');
+    showOperator(el,x.p);
     const statusList=(x.p.aansluitingen||[]).filter(c=>c.status!=='REMOVED');
     const statuses=[...new Set(statusList.map(c=>c.status||'UNKNOWN'))].join(', ');
     const latest=statusList.map(c=>c.bijgewerkt).filter(Boolean).sort().at(-1)||'onbekend';
     const available=statusList.filter(c=>c.status==='AVAILABLE').length;
     const trust=reliability(x);
-    addText(el,'p',(x.tier===0?'🟢 '+x.availableCount+' vrij volgens NDW':'🟠 '+(x.live?x.availableCount+' vrij gemeld, status ouder dan 15 min':'Eerder vrij gemeld – opnieuw controleren'))+' · 🚶 '+Math.round(x.walk)+' m','mini-line');
-    addText(el,'p',(x.live?'Rechtstreekse NDW-status. '+x.availableCount+' van '+x.direct.total+' AC Type 2-aansluitingen vrij gemeld. ':'⚠️ Alleen opgeslagen momentopname; niet actueel bevestigd. ')+(x.latestAvailable?'Laatste statusupdate: '+new Date(x.latestAvailable).toLocaleString('nl-NL')+'. ':'')+'Aanwezigheid en werking niet gegarandeerd.','uncertain');
+    addText(el,'p',(x.availabilityUnknown?'⚪ Bezetting onbekend':'🟢 '+x.availableCount+' vrij volgens NDW')+' · 🚶 '+Math.round(x.walk)+' m','mini-line');
+    if(x.availabilityUnknown)addText(el,'p','De online testversie kon NDW-status niet ophalen. Deze locatie staat hier om prijzen en parkeren te vergelijken.','uncertain');
+    else addText(el,'p','Rechtstreekse NDW-status. Laatste statusupdate: '+new Date(x.latestAvailable).toLocaleString('nl-NL')+'.','uncertain');
     addText(el,'p',x.tariff?money(x.tariff.total)+' / '+fmt(kwh)+' kWh':'Tarief onbekend','price-main');
+    addText(el,'p',x.parkingForHour===null?'Parkeren (1 uur): onbekend. Getoonde laadprijs is exclusief gemeentelijk parkeren.':'Parkeren (1 uur): '+money(x.parkingForHour)+(x.tariff?' · Laden + parkeren: '+money(x.tariff.total+x.parkingForHour):''),'uncertain');
     addText(el,'p','Prijs indicatief · beschikbaarheid kan wijzigen','uncertain');
+    const hist=historicalShuttel(x.p);
+    if(hist){const rate=hist.cost/hist.kwh;addText(el,'p','Shuttel-indicatie voor '+fmt(kwh)+' kWh: '+money(rate*kwh)+' op basis van '+hist.sessions+' eerdere sessie(s) op dit adres in 2026. Historisch gemiddelde '+money(rate)+'/kWh. Actueel tarief onbekend.','uncertain')}
     if(x.tariff?.tariffType==='AD_HOC_PAYMENT')addText(el,'p','Tarief voor direct betalen bij de laadpaal. Shuttel-eindprijs niet bevestigd.','uncertain');
     if(x.unknownTariffs)addText(el,'p','Er zijn ook onbekende tariefverwijzingen op deze locatie; een ander tarief kan goedkoper zijn.','uncertain');
     if(x.live&&x.tariff)addText(el,'p','Vrije aantallen gelden voor de locatie; NDW bevestigt niet dat juist de goedkoopste aansluiting nu vrij is.','uncertain');
@@ -607,16 +616,23 @@ $('refresh').onclick=async()=>{
     }
     const parkingMap=document.createElement('a');parkingMap.href='https://www.easypark.com/nl/locaties';parkingMap.target='_blank';parkingMap.rel='noopener noreferrer';parkingMap.textContent='Bekijk de EasyPark-parkeerkaart ↗';parking.appendChild(parkingMap);
     addText(parking,'p','Controleer voor deze zone de geplande datum en het hele parkeertijdvak in EasyPark, bij de gemeente of op het parkeerbord. Zondagen en feestdagen kunnen afwijken. Vul het totale bedrag inclusief eventuele EasyPark-kosten in. Gebruik € 0 alleen als de hele periode gratis is.','muted');
-    const parkingActions=document.createElement('div');parkingActions.className='actions';
-    const parkingEntry=document.createElement('button');parkingEntry.type='button';parkingEntry.className='secondary';parkingEntry.textContent='Parkeerkosten invullen';
-    parkingEntry.onclick=()=>{const fee=$('parkingFee');const panel=fee.closest('details');if(panel)panel.open=true;fee.focus()};
-    const freeParking=document.createElement('button');freeParking.type='button';freeParking.className='secondary';freeParking.textContent='Gecontroleerd: gratis parkeren';
-    freeParking.onclick=()=>{
-     if(!confirm('Heb je voor '+(parkingAddress||'deze laadpaal')+' gecontroleerd dat parkeren op je geplande datum en gedurende het hele parkeertijdvak gratis is?'))return;
-     const fee=$('parkingFee');fee.value='0';fee.dispatchEvent(new Event('change',{bubbles:true}));
-     chargeMessage('€ 0 gemeentelijke parkeerkosten ingevuld op basis van je controle. Zoek opnieuw laadpalen om de ramingen te vernieuwen.',true);
+    const feeLabel=addText(parking,'label','Gecontroleerd parkeerbedrag voor 1 uur (€)');
+    const fee=document.createElement('input');fee.type='text';fee.inputMode='decimal';fee.value=x.parkingForHour===null?'':String(x.parkingForHour).replace('.',',');feeLabel.appendChild(fee);
+    const saveFee=addText(parking,'button','Vergelijk opnieuw met dit bedrag','secondary');
+    saveFee.type='button';
+    saveFee.onclick=()=>{
+     const value=fee.value.trim();
+     const amount=PlannerCore.number(value);
+     if(value&&(!/^\d+(?:[.,]\d{1,2})?$/.test(value)||!Number.isFinite(amount))){chargeMessage('Vul een geldig bedrag in, bijvoorbeeld 2,50, of laat het veld leeg.');return}
+     const key=parkingKey(x);
+     if(value)parkingByCharger.set(key,amount);else parkingByCharger.delete(key);
+     if(appliedTariff&&chosenCharger?.key===reportKey(x)&&chosenCharger.destination===$('destination').value.trim()){
+      x.parkingForHour=value?amount:null;
+      if(x.tariff){useChargerTariff(x);calc()}
+     }
+     return $('refresh').onclick();
     };
-    parkingActions.append(parkingEntry,freeParking);parking.appendChild(parkingActions);el.appendChild(parking);
+    el.appendChild(parking);
 
     const check=document.createElement('a');check.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([x.p.adres,x.p.plaats,'laadpaal'].filter(Boolean).join(' '));check.target='_blank';check.rel='noopener noreferrer';check.textContent='🔎 Locatie vergelijken in Google Maps';el.appendChild(check);
     const reports=document.createElement('details');reports.className='info';
@@ -632,8 +648,6 @@ $('refresh').onclick=async()=>{
     const details=document.createElement('details');details.className='info';
     const summary=document.createElement('summary');summary.textContent='ℹ️ Meer info over laadpaal';details.appendChild(summary);
     addText(details,'p','Status: '+(statuses||'onbekend')+' · laatst bijgewerkt: '+latest,'muted');
-    const hist=historicalShuttel(x.p);
-    if(hist){const rate=hist.cost/hist.kwh;addText(details,'p','Historisch Shuttel (2026): '+hist.sessions+' sessie(s), '+fmt(hist.kwh)+' kWh, '+money(hist.cost)+' totaal. Gemiddeld '+money(rate)+'/kWh; '+fmt(kwh)+' kWh ≈ '+money(rate*kwh)+'. Geen actueel tarief.','muted')}
     if(x.tariff){
      const matching=(x.p.aansluitingen||[]).filter(c=>c.id&&(c.tarieven||[]).includes(x.tariff.tariffKey)&&!['REMOVED','INOPERATIVE','OUTOFORDER','PLANNED'].includes(c.status)&&!(c.onbekende_tarieven||[]).length);
      addText(details,'p','Goedkoopste tariefcode: '+x.tariff.tariffKey+' · '+matching.length+' aansluitingen','muted');
@@ -652,7 +666,7 @@ $('refresh').onclick=async()=>{
    (x.tariff?$('chargers'):$('unknownChargers')).appendChild(el);
   }
   updateChosenCharger();
-  chargeMessage((liveOk?'Rechtstreekse NDW-status':'⚠️ Alleen oude momentopname')+' · '+displayed.length+' laadlocaties met vrije melding getoond: '+displayed.filter(x=>x.tier===0).length+' recent (groen), '+displayed.filter(x=>x.tier===1).length+' ouder/onbekend (oranje). Top 3 gerangschikt op geschatte sessieprijs, daarna loopafstand; statusouderdom apart vermeld. Onbekende/complexe tarieven apart, mogelijk goedkoper. '+priced.length+' met berekenbaar tarief. '+(failures?'Let op: '+failures+' looproutes niet gecontroleerd; top 3 mogelijk onvolledig. ':'')+'Vrije aansluitingen kunnen vóór aankomst bezet raken. Prijzen uit afzonderlijk, mogelijk ouder bestand. '+(failures?'Sommige routes niet gecontroleerd. ':'')+'NDW-update: '+updated,true);
+  chargeMessage((liveOk?'Recente NDW-status':'Bezetting onbekend')+' · '+displayed.length+' laadlocaties. Volledig vergelijkbare palen eerst, op laadkosten plus één uur parkeren. '+(failures?failures+' looproutes niet gecontroleerd. ':'')+'Prijzen uit een afzonderlijk bestand.',true);
  }catch(e){chargeMessage('Zoeken mislukt: '+(e.message||String(e)))}finally{btn.disabled=false}
 };
 let autoRouteTimer=null;
@@ -716,8 +730,8 @@ $('reset').onclick=()=>{
  rideController.stop('Invoer hersteld. Start de ritstand opnieuw vóór vertrek.');
  if(activeSpeech){const rec=activeSpeech;activeSpeech=null;rec.onresult=null;try{rec.abort?rec.abort():rec.stop()}catch(e){}}
  for(const id of ['voiceOrigin','voiceDestination']){const button=$(id);button.speechRecognition=null;button.classList.remove('listening');button.textContent='🎤'}
- clearAppliedTariff();chosenCharger=null;chargerChoiceControls=[];
- try{localStorage.removeItem('volvo-planner-input-v2');localStorage.removeItem('volvo-planner-chosen-charger-v1')}catch(e){}
+ clearAppliedTariff();chosenCharger=null;chargerChoiceControls=[];parkingByCharger.clear();
+ try{localStorage.removeItem('volvo-planner-input-v2');localStorage.removeItem(electricManualKey);localStorage.removeItem('volvo-planner-chosen-charger-v1')}catch(e){}
  for(const id of fields)$(id).value=initialInput[id];
  petrolManual=false;try{localStorage.removeItem(petrolManualKey)}catch(e){}renderDailyPetrol();
  for(const id of ['origin','destination']){delete addressSessions[id];const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');if(query)query.value='';if(choices)choices.replaceChildren();const controls=$(id+'ScrollControls');if(controls)controls.hidden=true;addressMessage(id,'')}
@@ -726,15 +740,21 @@ $('reset').onclick=()=>{
  chargeMessage('Invoer hersteld. Zoek opnieuw laadpalen bij je bestemming.');
  status('Invoer hersteld. Google Maps blijft verbonden als de verbinding al actief was. Je kunt opnieuw typen of op 🎤 tikken.',true);
 };
+const electricManualKey='volvo-elec-manual-v1';
+$('elecUse').addEventListener('input',()=>{try{localStorage.setItem(electricManualKey,'1')}catch(e){}});
+$('resetElectricUse').onclick=()=>{
+ $('elecUse').value=initialInput.elecUse;
+ try{localStorage.removeItem(electricManualKey)}catch(e){}
+ calc();
+};
 for(const id of ['publicPrice','startFee'])$(id).addEventListener('input',clearAppliedTariff);
 for(const id of fields){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);}
 for(const id of ['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee'])$(id).addEventListener('change',()=>{$('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('Instellingen gewijzigd: klik opnieuw op Zoek / ververs laadpalen om prijzen te herberekenen.');});
 try{
  const storageKey='volvo-planner-input-v2';
- const migrationKey='volvo-elec-default-148-v1';
  const saved=JSON.parse(localStorage.getItem(storageKey)||'null');
  if(saved){
-  if(!localStorage.getItem(migrationKey)&&PlannerCore.number(saved.elecUse)===25){
+  if(!localStorage.getItem(electricManualKey)&&PlannerCore.number(saved.elecUse)===25){
    saved.elecUse=initialInput.elecUse;
    localStorage.setItem(storageKey,JSON.stringify(saved));
   }
@@ -744,7 +764,6 @@ try{
    $(id).value=saved[id];
   }
  }
- localStorage.setItem(migrationKey,'1');
 }catch(e){}
 const petrolManualKey='volvo-petrol-manual-v1';
 let petrolManual=false;
@@ -806,7 +825,7 @@ async function findAlternative(coords,target,current,features){
   const availability=RideMode.readAvailability(matchDirect(x,fresh));
   if(availability.state!=='available'){$('alternativeStatus').textContent='De andere laadpaal is inmiddels niet meer vrij bevestigd. Ik controleer opnieuw bij de volgende locatie-update.';return}
   alternativeFor=target.key;
-  const name=[x.p.adres||x.p.naam||'Laadlocatie',x.p.plaats].filter(Boolean).join(', '),card=document.createElement('article');card.className='charger';addText(card,'h3',name);addText(card,'p','Vrij gemeld door NDW · '+fmt(x.drive/1000)+' km rijden · '+Math.round(x.walk)+' m lopen naar je oorspronkelijke bestemming.');addText(card,'p',x.tariff?'Geschatte volledige laadsessie: '+money(x.tariff.total)+'. Shuttel en parkeren niet geverifieerd.':'Tarief onbekend; Shuttel en parkeren niet geverifieerd.','muted');
+  const name=[x.p.adres||x.p.naam||'Laadlocatie',x.p.plaats].filter(Boolean).join(', '),card=document.createElement('article');card.className='charger';addText(card,'h3',name);showOperator(card,x.p);addText(card,'p','Vrij gemeld door NDW · '+fmt(x.drive/1000)+' km rijden · '+Math.round(x.walk)+' m lopen naar je oorspronkelijke bestemming.');addText(card,'p',x.tariff?'Geschatte volledige laadsessie: '+money(x.tariff.total)+'. Shuttel en parkeren niet geverifieerd.':'Tarief onbekend; Shuttel en parkeren niet geverifieerd.','muted');
   const link=document.createElement('a');link.className='button';link.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(x.coords.lat+','+x.coords.lng)+'&travelmode=driving';link.target='_blank';link.rel='noopener noreferrer';link.textContent='Kies deze laadpaal en open Google Maps ↗';link.onclick=()=>{chooseCharger(x)};card.appendChild(link);$('alternativeResult').replaceChildren(card);$('alternativeStatus').textContent='Eén andere laadpaal gevonden. Tik op de knop om deze te kiezen en Google Maps te openen.';if(!alreadyOffered)switchTab('alternatief');if(!alreadyOffered)rideSpeak('Je gekozen laadpaal is niet vrij gemeld. Een andere vrije laadpaal staat klaar op het tabblad Andere paal. Laat een passagier helpen of stop voordat je deze opent.');
  }catch(e){if(valid()){$('alternativeResult').replaceChildren();$('alternativeStatus').textContent='Andere laadpaal zoeken is niet gelukt. Geen vrije locatie bevestigd.'}}
 }
