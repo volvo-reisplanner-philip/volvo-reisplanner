@@ -72,8 +72,8 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <div class="grid"><div class="wide"><label for="contactsFile">Apple-contactenbestand kiezen (.vcf)</label><input id="contactsFile" type="file" accept=".vcf,.vcard,text/vcard,text/x-vcard"></div></div><div class="actions"><button id="contactsDevice" class="secondary" type="button">Contacten kiezen op apparaat</button></div><p id="contactsStatus" class="muted" role="status">Selecteer een contactenbestand om eerst een voorbeeld te bekijken.</p><div id="contactsPreview" class="contacts-preview"></div><div class="actions"><button id="contactsImport" type="button" disabled>Geselecteerde contacten bewaren</button><button id="contactsCancel" class="secondary" type="button" disabled>Voorbeeld sluiten</button></div><details class="info"><summary>Apple Contacten exporteren</summary><p class="muted">Mac: open Contacten, selecteer de gewenste personen en kies Archief → Exporteer → Exporteer vCard. Kies dat .vcf-bestand hierboven. Bewaar het bestand op je eigen apparaat; je hoeft het niet in deze chat te delen. Op de iPhone kun je via Contacten een contact delen als vCard of via iCloud.com geselecteerde contacten exporteren.</p></details><p id="microphoneStatus" class="muted" role="status">Microfoon: klik op 🎤 bij vertrek of bestemming om te dicteren.</p><p class="muted">Voor blijvende microfoontoegang: klik in Chrome links van het webadres op Sitegegevens → Site-instellingen → Microfoon → Toestaan. Kies bij een vraag Toestaan tijdens bezoek aan de site, niet Deze keer toestaan. De browser beheert dit per website; de planner kan het niet afdwingen. Hij luistert alleen na een klik op 🎤.</p><p class="muted">Het adresboek wordt lokaal in deze browser opgeslagen en synchroniseert niet automatisch tussen Mac en iPhone.</p></section>
 </div><div class="view" data-view="kosten" hidden><section class="card"><h2>Kostenberekening</h2><div class="grid">
 <div><label for="homePrice">Thuisstroom €/kWh</label><input id="homePrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.26836"></div>
-<div><label for="petrolPrice">Benzine €/liter</label><input id="petrolPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="2.159"></div>
-<div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="25"></div>
+<div><label for="petrolPrice">Benzine €/liter</label><input id="petrolPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="2,120"><p id="petrolStatus" class="muted" role="status"></p><button id="petrolAuto" type="button" class="secondary">Gebruik dagprijs Apeldoorn</button></div>
+<div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="14,8"></div>
 <div><label for="fuelUse">Benzine liter/100 km</label><input id="fuelUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="8"></div>
 <div><label for="publicPrice">Openbaar tarief €/kWh</label><input id="publicPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.555"></div>
 <div><label for="startFee">Start-/extra kosten (€)</label><input id="startFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div>
@@ -683,6 +683,7 @@ $('reset').onclick=()=>{
  clearAppliedTariff();chosenCharger=null;chargerChoiceControls=[];
  try{localStorage.removeItem('volvo-planner-input-v2');localStorage.removeItem('volvo-planner-chosen-charger-v1')}catch(e){}
  for(const id of fields)$(id).value=initialInput[id];
+ petrolManual=false;try{localStorage.removeItem(petrolManualKey)}catch(e){}renderDailyPetrol();
  for(const id of ['origin','destination']){delete addressSessions[id];const query=$(id+'VoiceSearch'),choices=$(id+'VoiceChoices');if(query)query.value='';if(choices)choices.replaceChildren();const controls=$(id+'ScrollControls');if(controls)controls.hidden=true;addressMessage(id,'')}
  $('chargers').replaceChildren();$('unknownChargers').replaceChildren();$('rideResults').replaceChildren();clearAlternative();
  updateManualCapacity();checkRangeWarning();updateRouteTotal();calc();updateChosenCharger();
@@ -693,6 +694,28 @@ for(const id of ['publicPrice','startFee'])$(id).addEventListener('input',clearA
 for(const id of fields){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);}
 for(const id of ['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee'])$(id).addEventListener('change',()=>{$('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('Instellingen gewijzigd: klik opnieuw op Zoek / ververs laadpalen om prijzen te herberekenen.');});
 try{const saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(const id of fields)if(saved[id]!==undefined){if(id==='origin' && ['Beekbergen, Nederland','Beekbergen'].includes(String(saved[id]).trim()))continue;$(id).value=saved[id]}}catch(e){}
+const petrolManualKey='volvo-petrol-manual-v1';
+let petrolManual=false;
+try{petrolManual=localStorage.getItem(petrolManualKey)==='1'}catch(e){}
+let dailyPetrol={"datum": "2026-11-07", "prijs": 2.12, "aantal": 23, "bron": "https://tanktip.nl/goedkoop-tanken/apeldoorn/", "bronmoment": "2026-11-07T15:05:19+00:00"};
+function renderDailyPetrol(){
+ const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Amsterdam'}).format(new Date());
+ const sample=dailyPetrol;
+ $('petrolStatus').textContent=(petrolManual?'Handmatige prijs. ':'')+'Euro 95 Apeldoorn: € '+sample.prijs.toFixed(3).replace('.',',')+' per liter, '+sample.aantal+' stations buiten de snelweg, '+sample.datum+'. '+(sample.datum===today?'Bron: TankTip.':'Dagprijs nog niet bijgewerkt. Bron: TankTip.');
+ if(!petrolManual)$('petrolPrice').value=sample.prijs.toFixed(3).replace('.',',');
+ calc();
+}
+async function refreshDailyPetrol(){
+ try{
+  const data=await readJson('./data/benzine-apeldoorn.json');
+  if(/^\d{4}-\d{2}-\d{2}$/.test(data?.datum)&&data.datum>=dailyPetrol.datum&&Number.isFinite(data.prijs)&&data.prijs>=0.5&&data.prijs<=5&&Number.isInteger(data.aantal)&&data.aantal>=3)dailyPetrol=data;
+ }catch(e){}
+ renderDailyPetrol();
+}
+$('petrolPrice').addEventListener('input',()=>{petrolManual=true;try{localStorage.setItem(petrolManualKey,'1')}catch(e){}renderDailyPetrol()});
+$('petrolAuto').onclick=()=>{petrolManual=false;try{localStorage.removeItem(petrolManualKey)}catch(e){}renderDailyPetrol();refreshDailyPetrol()};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshDailyPetrol()});
+window.setInterval?.(refreshDailyPetrol,3600000);
 let pendingContacts=[],contactBoxes=[],contactReadVersion=0;
 function contactsClear(){pendingContacts=[];contactBoxes=[];$('contactsPreview').replaceChildren();$('contactsImport').disabled=true;$('contactsCancel').disabled=true;$('contactsFile').value=''}
 function contactsPreview(entries,message){contactsClear();pendingContacts=entries;for(const [i,entry] of entries.entries()){const row=document.createElement('div');row.className='contact-preview';const box=document.createElement('input');box.type='checkbox';box.id='contactPick'+i;box.checked=true;const label=document.createElement('label');label.setAttribute('for',box.id);label.textContent=entry.name+' — '+entry.destination;row.append(box,label);$('contactsPreview').appendChild(row);contactBoxes.push(box)}$('contactsImport').disabled=!entries.length;$('contactsCancel').disabled=!entries.length;$('contactsStatus').textContent=message+' Bekijk de selectie; er is nog niets opgeslagen.'}
@@ -704,7 +727,7 @@ if(!deviceContactPicker)$('contactsDevice').textContent='Direct kiezen niet onde
 $('contactsDevice').onclick=async()=>{try{if(!deviceContactPicker)return;const supported=await navigator.contacts.getProperties();if(!supported.includes('address'))throw Error('Deze contactenkiezer deelt geen postadressen. Gebruik een .vcf-bestand.');const chosen=await navigator.contacts.select(['name','address'],{multiple:true});const entries=ContactsBook.fromDevice(chosen);contactsPreview(entries,entries.length+' geselecteerde adres(sen) ontvangen.')}catch(e){if(e.name!=='AbortError')$('contactsStatus').textContent=e.message}};
 async function updateMicrophoneStatus(){try{if(!navigator.permissions?.query)return;const permission=await navigator.permissions.query({name:'microphone'});const show=()=>{$('microphoneStatus').textContent=permission.state==='granted'?'Microfoon: browsertoegang toegestaan voor deze website. Klik op 🎤 om te dicteren.':permission.state==='denied'?'Microfoon: geblokkeerd door de browser. Zet Microfoon voor deze website op Toestaan in de site-instellingen.':'Microfoon: de browser vraagt nog toestemming. Kies Toestaan tijdens bezoek aan de site voor volgende bezoeken.'};show();permission.onchange=show}catch(e){$('microphoneStatus').textContent='Microfoon: controleer de toestemming bij Sitegegevens in je browser.'}}
 updateMicrophoneStatus();
-bookRender();updateManualCapacity();checkRangeWarning();updateRouteTotal();calc();
+bookRender();updateManualCapacity();checkRangeWarning();updateRouteTotal();renderDailyPetrol();refreshDailyPetrol();
 try{if(localStorage.getItem(mapsKeyName))initMaps()}catch(e){}
 
 async function findAlternative(coords,target,current,features){
