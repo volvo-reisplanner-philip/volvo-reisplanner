@@ -11,6 +11,9 @@ from pathlib import Path
 from collections import defaultdict
 import shutil
 import math
+import re
+from zoneinfo import ZoneInfo
+from statistics import mean
 
 LOCATIES_URL = "https://opendata.ndw.nu/charging_point_locations_ocpi.json.gz"
 TARIEVEN_URL = "https://opendata.ndw.nu/charging_point_tariffs_ocpi.json.gz"
@@ -194,5 +197,48 @@ def main():
     print(f"Manifest: {TEGELS_MAP / 'index.json'}")
 
 
+BENZINE_UITVOER = Path("data/benzine-apeldoorn.json")
+BENZINE_BRON = "https://tanktip.nl/goedkoop-tanken/apeldoorn/"
+BENZINE_API = "https://tanktip.nl/wp-json/tank/v1/dichtbij?lat=52.201&lng=5.9698&brandstof=e10&straal=15&limiet=100"
+
+
+def bereken_benzine(data, vandaag):
+    bronmoment = datetime.fromisoformat(data["opgehaald_op"].replace("Z", "+00:00"))
+    if bronmoment.astimezone(ZoneInfo("Europe/Amsterdam")).date() != vandaag:
+        raise ValueError("De bron bevat nog geen pompprijzen van vandaag")
+    prijzen = {}
+    for station in data["stations"]:
+        if station.get("plaats", "").strip().casefold() != "apeldoorn" or station.get("land") != "NL":
+            continue
+        adres = station.get("straat") or ""
+        locatie = f"{station.get('naam', '')} {adres}"
+        if not adres or re.search(r"\b(?:rijksweg|snelweg|verzorgingsplaats|A\s*\d+)\b", locatie, re.I):
+            continue
+        prijs = station.get("prijs")
+        if station.get("versheid") != "actueel" or station.get("verdacht") or not isinstance(prijs, (int, float)) or not 0.5 <= prijs <= 5:
+            continue
+        prijzen[adres.strip().casefold()] = prijs
+    if len(prijzen) < 3:
+        raise ValueError("Te weinig recente lokale pompprijzen")
+    return {"datum": vandaag.isoformat(), "prijs": round(mean(prijzen.values()), 3),
+            "aantal": len(prijzen), "bron": BENZINE_BRON, "bronmoment": bronmoment.isoformat()}
+
+
+def update_benzine():
+    vandaag = datetime.now(ZoneInfo("Europe/Amsterdam")).date()
+    try:
+        if BENZINE_UITVOER.exists() and json.loads(BENZINE_UITVOER.read_text())["datum"] == vandaag.isoformat():
+            return
+        request = urllib.request.Request(BENZINE_API, headers={"User-Agent": "VolvoReisplanner/1.0"})
+        with urllib.request.urlopen(request, timeout=20) as response:
+            resultaat = bereken_benzine(json.load(response), vandaag)
+        BENZINE_UITVOER.parent.mkdir(parents=True, exist_ok=True)
+        BENZINE_UITVOER.write_text(json.dumps(resultaat, ensure_ascii=False), encoding="utf-8")
+        print(f"Euro 95 Apeldoorn: {resultaat['prijs']} bij {resultaat['aantal']} stations")
+    except (OSError, ValueError, KeyError, TypeError) as fout:
+        print(f"Benzineprijs niet vernieuwd: {fout}")
+
+
 if __name__ == "__main__":
+    update_benzine()
     main()
