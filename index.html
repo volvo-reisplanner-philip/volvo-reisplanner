@@ -693,7 +693,23 @@ $('reset').onclick=()=>{
 for(const id of ['publicPrice','startFee'])$(id).addEventListener('input',clearAppliedTariff);
 for(const id of fields){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);}
 for(const id of ['chargeKwh','chargeMinutes','parkingMinutes','vatMode','shuttelFee','shuttelMarkup','parkingFee'])$(id).addEventListener('change',()=>{$('chargers').replaceChildren();$('unknownChargers').replaceChildren();chargeMessage('Instellingen gewijzigd: klik opnieuw op Zoek / ververs laadpalen om prijzen te herberekenen.');});
-try{const saved=JSON.parse(localStorage.getItem('volvo-planner-input-v2')||'null');if(saved)for(const id of fields)if(saved[id]!==undefined){if(id==='origin' && ['Beekbergen, Nederland','Beekbergen'].includes(String(saved[id]).trim()))continue;$(id).value=saved[id]}}catch(e){}
+try{
+ const storageKey='volvo-planner-input-v2';
+ const migrationKey='volvo-elec-default-148-v1';
+ const saved=JSON.parse(localStorage.getItem(storageKey)||'null');
+ if(saved){
+  if(!localStorage.getItem(migrationKey)&&PlannerCore.number(saved.elecUse)===25){
+   saved.elecUse=initialInput.elecUse;
+   localStorage.setItem(storageKey,JSON.stringify(saved));
+  }
+  for(const id of fields){
+   if(saved[id]===undefined)continue;
+   if(id==='origin'&&['Beekbergen, Nederland','Beekbergen'].includes(String(saved[id]).trim()))continue;
+   $(id).value=saved[id];
+  }
+ }
+ localStorage.setItem(migrationKey,'1');
+}catch(e){}
 const petrolManualKey='volvo-petrol-manual-v1';
 let petrolManual=false;
 try{petrolManual=localStorage.getItem(petrolManualKey)==='1'}catch(e){}
