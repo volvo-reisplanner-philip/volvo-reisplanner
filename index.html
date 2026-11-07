@@ -563,6 +563,12 @@ $('refresh').onclick=async()=>{
     addText(parking,'summary','🅿️ Parkeren met EasyPark');
     const parkingAddress=[x.p.adres||x.p.naam,x.p.plaats].filter(Boolean).join(', ');
     addText(parking,'p','Zoek in EasyPark op '+(parkingAddress||'het adres van deze laadpaal')+' of op het zonenummer van het parkeerbord.');
+    if(isAppleMobile()){
+     const openApp=document.createElement('a');openApp.href='shortcuts://run-shortcut?name=Open%20EasyPark';openApp.className='button';openApp.textContent='Open EasyPark-app';parking.appendChild(openApp);
+     const setup=document.createElement('details');addText(setup,'summary','Eenmalig instellen op iPhone');
+     addText(setup,'p','Maak in Opdrachten een opdracht met de naam Open EasyPark. Voeg de actie Open app toe en kies EasyPark. Daarna opent deze knop EasyPark via die opdracht. Zoek daar zelf de parkeerzone op.');
+     parking.appendChild(setup);
+    }
     const parkingMap=document.createElement('a');parkingMap.href='https://www.easypark.com/nl/locaties';parkingMap.target='_blank';parkingMap.rel='noopener noreferrer';parkingMap.textContent='Bekijk de EasyPark-parkeerkaart ↗';parking.appendChild(parkingMap);
     addText(parking,'p','Controleer voor deze zone de geplande datum en het hele parkeertijdvak in EasyPark, bij de gemeente of op het parkeerbord. Zondagen en feestdagen kunnen afwijken. Vul het totale bedrag inclusief eventuele EasyPark-kosten in. Gebruik € 0 alleen als de hele periode gratis is.','muted');
     const parkingActions=document.createElement('div');parkingActions.className='actions';
