@@ -248,6 +248,7 @@ function calc(){
  updateChosenCharger();updateRouteTotal();checkRangeWarning();
  if(appliedTariff){const price=basicPrice(appliedTariff.definition,n('chargeKwh'));if(price){$('publicPrice').value=((price.components.ENERGY?.gross||0)/n('chargeKwh')+n('shuttelMarkup')).toFixed(8);$('startFee').value=(price.flat+price.time+price.parking+n('shuttelFee')+n('parkingFee')).toFixed(8);$('tariffSummary').textContent='Gekoppeld NDW-tarief '+appliedTariff.key+'; sessievolume en tijdkosten worden opnieuw berekend. Prijsmomentopname: '+appliedTariff.savedAt+'. Ververs voor vertrek.'+(price.tariffType==='AD_HOC_PAYMENT'?' Dit is een tarief voor direct betalen; Shuttel-eindprijs niet bevestigd.':'')}else{$('tariffSummary').textContent='⚠️ Het gekoppelde tarief kan niet meer worden berekend. Zoek opnieuw of voer handmatig een tarief in.';}}else $('tariffSummary').textContent='Handmatig openbaar tarief; controleer start- en tijdkosten.';
  const v=Object.fromEntries(fields.map(id=>[id,$(id).value]));
+ if(!appliedTariff&&Number.isFinite(PlannerCore.number(v.startFee))&&Number.isFinite(PlannerCore.number(v.parkingFee)))v.startFee=PlannerCore.number(v.startFee)+PlannerCore.number(v.parkingFee);
  const {out,back,home,extra,petrolKm,hc,cc,pc,sessionKwh}=PlannerCore.trip(v);
  $('sessionSummary').textContent='Bijladen voor deze rit: '+fmt(extra*n('elecUse')/100)+' kWh verbruikt. Berekende laadsessie: '+fmt(sessionKwh)+' kWh. '+($('sessionMode').value==='full'?'Volledige sessie betaald, ook als energie overblijft.':'Bestaande methode: alleen verbruikte bijlaadenergie.');
  for(const [id,val] of Object.entries({totalKm:fmt(out+back)+' km',homeKm:fmt(home)+' km',chargeKm:fmt(extra)+' km',petrolKm:fmt(petrolKm)+' km',homeCost:money(hc),chargeCost:money(cc),petrolCost:money(pc),totalCost:money(hc+cc+pc)}))$(id).textContent=val;
@@ -558,6 +559,17 @@ $('refresh').onclick=async()=>{
     navLink('🚗 Naar laadpaal',$('origin').value.trim(),chargerCoords,'driving');
     navLink('🚶 Naar bestemming',chargerCoords,$('destination').value.trim(),'walking');
     el.appendChild(links);
+    const parking=document.createElement('details');parking.className='info';
+    addText(parking,'summary','🅿️ Parkeren met EasyPark');
+    const parkingAddress=[x.p.adres||x.p.naam,x.p.plaats].filter(Boolean).join(', ');
+    addText(parking,'p','Zoek in EasyPark op '+(parkingAddress||'het adres van deze laadpaal')+' of op het zonenummer van het parkeerbord.');
+    const parkingMap=document.createElement('a');parkingMap.href='https://www.easypark.com/nl/locaties';parkingMap.target='_blank';parkingMap.rel='noopener noreferrer';parkingMap.textContent='Bekijk de EasyPark-parkeerkaart ↗';parking.appendChild(parkingMap);
+    addText(parking,'p','Controleer zone, betaaluren en het totale parkeerbedrag inclusief eventuele EasyPark-kosten. Vul dat bedrag eenmaal in voor deze rit.','muted');
+    const parkingActions=document.createElement('div');parkingActions.className='actions';
+    const parkingEntry=document.createElement('button');parkingEntry.type='button';parkingEntry.className='secondary';parkingEntry.textContent='Parkeerkosten invullen';
+    parkingEntry.onclick=()=>{const fee=$('parkingFee');const panel=fee.closest('details');if(panel)panel.open=true;fee.focus()};
+    parkingActions.appendChild(parkingEntry);parking.appendChild(parkingActions);el.appendChild(parking);
+
     const check=document.createElement('a');check.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([x.p.adres,x.p.plaats,'laadpaal'].filter(Boolean).join(' '));check.target='_blank';check.rel='noopener noreferrer';check.textContent='🔎 Locatie vergelijken in Google Maps';el.appendChild(check);
     const reports=document.createElement('details');reports.className='info';
     const reportSummary=document.createElement('summary');reportSummary.textContent='📝 Mijn controle ter plaatse';reports.appendChild(reportSummary);
