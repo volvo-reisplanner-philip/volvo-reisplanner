@@ -59,7 +59,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <option value="winter">❄️ Winter – maximaal 61 km</option><option value="summer">☀️ Zomer – maximaal 81 km</option>
 <option value="manual">✏️ Handmatig instellen</option></select></div>
 <div class="wide hidden" id="manualCapacityBox"><label for="manualCapacity">Maximale accucapaciteit (km)</label><input id="manualCapacity" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" max="1000" value="70"></div>
-<div><label for="range">Elektrisch bereik bij vertrek (km)</label><input id="range" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1000" value="40"></div>
+<div><label for="range">Elektrisch bereik bij vertrek (km)</label><input id="range" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1000" value="61"><button id="useDefaultRange" type="button" class="secondary">Gebruik ingesteld XC60-bereik</button></div>
 <div><label for="rangeAfter">Extra elektrisch bereik na laden op bestemming (km)</label><input id="rangeAfter" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" max="1000" value="0"></div>
 </div><div id="rangeWarning" class="status hidden" role="status"></div>
 <div class="actions"><button id="routeBtn">Bereken afstand met Google Maps</button><button id="mapsBtn" class="secondary">Open bestemming in Google Maps ↗</button><button id="returnMaps" class="secondary">Terugroute in Google Maps ↗</button><button id="shareDestination" class="secondary">Bestemming delen / kopiëren</button></div>
@@ -695,14 +695,25 @@ $('routeBtn').onclick=async()=>{
 };
 updateRouteTotal();
 function updateManualCapacity(){$('manualCapacityBox').classList.toggle('hidden',$('season').value!=='manual')}
+function configuredRange(){
+ const season=$('season').value;
+ return season==='winter'?61:season==='summer'?81:n('manualCapacity');
+}
+function applyConfiguredRange(){
+ const range=configuredRange();
+ if(range>=1&&range<=1000)$('range').value=String(range).replace('.',',');
+ calc();
+}
+$('useDefaultRange').onclick=applyConfiguredRange;
 $('season').addEventListener('change',()=>{
  updateManualCapacity();
- if($('season').value==='winter')$('range').value=61;
- else if($('season').value==='summer')$('range').value=81;
- calc();checkRangeWarning();
+ applyConfiguredRange();
+});
+$('manualCapacity').addEventListener('change',()=>{
+ if($('season').value==='manual')applyConfiguredRange();
 });
 function checkRangeWarning(){
- const cap=$('season').value==='winter'?61:$('season').value==='summer'?81:n('manualCapacity');
+ const cap=configuredRange();
  const start=n('range'),extra=n('rangeAfter'),remaining=Math.max(0,start-n('outkm'));
  const maxExtra=Math.max(0,cap-remaining),messages=[];
  if(start>cap)messages.push('Het vertrekbereik ('+start+' km) overschrijdt het maximum van '+cap+' km.');
@@ -767,6 +778,7 @@ try{
    if(id==='origin'&&['Beekbergen, Nederland','Beekbergen'].includes(String(saved[id]).trim()))continue;
    $(id).value=saved[id];
   }
+  if(saved.range===undefined){const range=configuredRange();if(range>=1&&range<=1000)$('range').value=String(range).replace('.',',')}
  }
 }catch(e){}
 const petrolManualKey='volvo-petrol-manual-v1';
