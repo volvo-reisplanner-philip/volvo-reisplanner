@@ -111,21 +111,25 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <h3>Snel aan de slag</h3>
 <ol>
 <li><strong>Route.</strong> Kies vertrek en bestemming en laat Google Maps de kilometers berekenen.</li>
-<li><strong>Laden.</strong> Vul de verwachte laadsessie in, zoek recent vrij gemelde laadpalen, vergelijk laden plus één uur parkeren en tik bij je keuze op <strong>Dit is mijn keuze</strong>.</li>
+<li><strong>Laden.</strong> Vul je verwachte laadduur in minuten in, zoek laadpalen, vergelijk laden plus één uur parkeren en tik bij je keuze op <strong>Dit is mijn keuze</strong>.</li>
 <li><strong>Kosten.</strong> Bekijk de ritraming en het advies of bijladen voordeliger is dan op benzine rijden.</li>
 <li><strong>Ritstand.</strong> Start vóór vertrek als je een melding over je gekozen laadpaal wilt.</li>
 </ol>
 <p class="muted">Eerste keer op dit apparaat? Verbind Google Maps onder <strong>Meer</strong> met je eigen sleutel.</p>
 <details class="info"><summary>Route, adressen en dicteren</summary>
 <p>Kies een adres uit de Google-resultaten. Op je iPhone brengt 🎤 je naar het zoekveld. Tik daarna op de microfoon van je toetsenbord. Tik op <strong>Zoek adres</strong> en veeg door de lijst of gebruik <strong>Meer adressen ↓</strong>. Je kunt heen- en terugkilometers ook zelf invullen.</p>
-<p>Stel het elektrische bereik bij vertrek en het extra bereik na laden in. Onderaan Route zet <strong>Invoer herstellen</strong> de route-, laad- en kosteninvoer terug op de standaardwaarden. Je adresboek en Google Maps-sleutel blijven bewaard.</p>
+<p>Kies het bereik van je XC60. De knop <strong>Gebruik ingesteld XC60-bereik</strong> zet het vertrekbereik terug op die waarde. Bij een deels geladen accu kun je het vertrekbereik voor deze rit aanpassen. Onderaan Route zet <strong>Invoer herstellen</strong> de route-, laad- en kosteninvoer terug op de standaardwaarden. Je adresboek en Google Maps-sleutel blijven bewaard.</p>
 </details>
 <details class="info"><summary>Laadpalen zoeken en kiezen</summary>
-<p>Vul het laadvolume in onder <strong>Laden</strong>. Vul je verwachte laadduur in minuten in. De planner schat het laadvolume automatisch met 3,7 kW als rekenwaarde. Onder Laden kies je bij Bereik na laden tussen de automatische schatting uit laadminuten en werkelijk gemeten kilometers. Je kunt het laadvermogen, laadvolume en extra bereik zelf wijzigen. Onder <strong>Aangesloten tijd, btw en bijkomende kosten</strong> kun je ook de totale aangesloten tijd instellen. Tik op <strong>Zoek / ververs laadpalen</strong>. De planner zoekt Type 2-locaties met een berekende looproute tot 500 meter.</p>
+<p>Vul onder <strong>Laden</strong> de verwachte laadduur in minuten in. De planner schat de geladen kWh met 3,7 kW als rekenwaarde, tenzij je zelf een vermogen invult. Met <strong>Werkelijke laadduur invullen</strong> geef je de gemeten minuten op. Maak dat veld leeg om terug te gaan naar de verwachte duur.</p>
+<p>Kies bij <strong>Bereik na laden</strong> voor <strong>Schatten uit laadminuten</strong> of <strong>Werkelijke kilometers invullen</strong>. De schatting gebruikt je ingestelde stroomverbruik. Laadverliezen en de vrije ruimte in de accu kunnen het bereik beperken.</p>
+<p>De aangesloten tijd volgt automatisch de gebruikte laadduur. Blijf je langer aan de paal staan, vul dan onder <strong>Aangesloten tijd, btw en bijkomende kosten</strong> de totale tijd in. Parkeergeld staat daar los van.</p>
+<p>Tik op <strong>Zoek / ververs laadpalen</strong>. De planner zoekt Type 2-locaties binnen 500 meter bevestigde loopafstand.</p>
 <p>De planner vraagt bij elke zoekopdracht opnieuw de NDW-status op. Alleen een melding van hoogstens 15 minuten oud telt mee als vrij. Locaties zonder recente melding kunnen verschijnen met Bezetting onbekend. Een vrije aansluiting kan vóór aankomst bezet raken. Vergelijk laden plus één uur parkeren en tik op <strong>Dit is mijn keuze</strong> om het beschikbare tarief en het ingevulde parkeerbedrag mee te nemen naar <strong>Kosten</strong>. Controleer de actuele Shuttel-prijs en acceptatie apart.</p>
 </details>
 <details class="info"><summary>Ritkosten en laadadvies</summary>
 <p>Onder <strong>Kosten</strong> kun je stroomprijs, benzineprijs en verbruik aanpassen. De standaard voor elektrisch verbruik is <strong>14,8 kWh/100 km</strong>. Je kunt het verbruik aanpassen en later met <strong>Gebruik standaard 14,8</strong> terugzetten. Bij benzine staat de Euro 95-dagprijs voor Apeldoorn buiten de snelweg, met de datum van de berekening. Tik op <strong>Gebruik dagprijs Apeldoorn</strong> om na een eigen invoer weer automatisch de dagprijs te volgen.</p>
+<p>Voor kilometers na het opgebruiken van het elektrische bereik rekent de planner standaard met <strong>8,54 l/100 km</strong>. Je kunt dit bij <strong>Benzineverbruik bij lege accu</strong> aanpassen.</p>
 <p>Het advies vergelijkt de geschatte kosten met en zonder bijladen. Controleer het gekozen laadvolume, de extra elektrische kilometers en de eventuele parkeerkosten voor je de bedragen vergelijkt.</p>
 </details>
 <details class="info"><summary>Ritstand, andere paal en Volvo</summary>
@@ -137,7 +141,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <p>Voor de knop <strong>Open EasyPark-app</strong> maak je op je iPhone één keer in <strong>Opdrachten</strong> een opdracht met de naam <strong>Open EasyPark</strong>. Voeg de actie <strong>Open app</strong> toe en kies EasyPark. Bij aankomst controleer je in EasyPark de zone van je werkelijke parkeerplek.</p>
 </details>
 <details class="info"><summary>Adresboek, instellingen en je iPhone</summary>
-<p>Onder <strong>Meer</strong> kun je adressen bewaren of een vCard-bestand met Apple-contacten importeren. Gebruik op je iPhone hetzelfde beginschermicoon of dezelfde browser om je opgeslagen instellingen te behouden. Sluit en heropen de planner als een nieuwe versie nog niet verschijnt.</p>
+<p>Bewaar een adres onder <strong>Route</strong> met <strong>Vertrekadres bewaren</strong> of <strong>Bestemming bewaren</strong>. Onder <strong>Meer → Adresboek en contacten</strong> kies je eerst voor welk veld je een adres wilt gebruiken en daarna het adres. De planner vult het veld in en opent Route. Klap <strong>Adres verwijderen</strong> open om een adres uit het adresboek te wissen. Je kunt hier ook een vCard-bestand met Apple-contacten importeren. Gebruik op je iPhone hetzelfde beginschermicoon of dezelfde browser om je opgeslagen instellingen te behouden. Sluit en heropen de planner als een nieuwe versie nog niet verschijnt.</p>
 </details>
 </section>
 </div></main>
