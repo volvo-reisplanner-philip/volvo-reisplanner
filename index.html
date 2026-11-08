@@ -68,7 +68,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <div class="actions"><button id="reset" class="secondary">Invoer herstellen</button></div><small class="muted">Herstelt route-, laad- en kosteninvoer. Je adresboek, Google Maps-sleutel en browsertoestemming blijven behouden.</small>
 </section>
 </div><div class="view" data-view="meer" hidden><section class="card"><h2>Adresboek en contacten</h2><p class="muted">Importeer gekozen Apple-contacten als vCard (.vcf). Alleen namen en postadressen komen lokaal in dit adresboek; geen telefoonnummers, e-mail, notities of foto's. Er is geen automatische synchronisatie met Apple Contacten. Adressen gaan pas naar Google wanneer je ze als vertrek of bestemming gebruikt en een route/adres laat berekenen.</p><div class="grid"><div class="wide"><label for="bookTarget">Gekozen adres gebruiken als</label><select id="bookTarget"><option value="destination">Bestemming</option><option value="origin">Vertrekadres</option></select></div><div class="wide"><label for="bookFilter">Zoek op naam of adres</label><input id="bookFilter" type="search" placeholder="Naam, straat of plaats"></div><div class="wide"><label for="book">Opgeslagen adressen en contacten</label><select id="book"><option value="">Kies een bestemming…</option></select></div></div>
-<label for="bookName">Naam voor deze bestemming (optioneel)</label><input id="bookName" type="text"><div class="actions"><button type="button" id="save" class="secondary">Bestemming bewaren</button><button id="remove" class="secondary">Verwijderen</button></div><p id="bookStatus" role="status" class="muted"></p>
+<label for="bookName">Naam voor deze bestemming (optioneel)</label><input id="bookName" type="text"><div class="actions"><button type="button" id="save" class="secondary">Bestemming bewaren</button></div><p id="bookStatus" role="status" class="muted"></p><details class="info"><summary>Adres verwijderen</summary><label for="bookRemove">Welk adres wil je verwijderen?</label><select id="bookRemove"><option value="">Kies een adres…</option></select><button id="remove" type="button" class="secondary" disabled>Verwijder gekozen adres</button><p id="bookRemoveStatus" role="status" class="muted"></p></details>
 <div class="grid"><div class="wide"><label for="contactsFile">Apple-contactenbestand kiezen (.vcf)</label><input id="contactsFile" type="file" accept=".vcf,.vcard,text/vcard,text/x-vcard"></div></div><div class="actions"><button id="contactsDevice" class="secondary" type="button">Contacten kiezen op apparaat</button></div><p id="contactsStatus" class="muted" role="status">Selecteer een contactenbestand om eerst een voorbeeld te bekijken.</p><div id="contactsPreview" class="contacts-preview"></div><div class="actions"><button id="contactsImport" type="button" disabled>Geselecteerde contacten bewaren</button><button id="contactsCancel" class="secondary" type="button" disabled>Voorbeeld sluiten</button></div><details class="info"><summary>Apple Contacten exporteren</summary><p class="muted">Mac: open Contacten, selecteer de gewenste personen en kies Archief → Exporteer → Exporteer vCard. Kies dat .vcf-bestand hierboven. Bewaar het bestand op je eigen apparaat; je hoeft het niet in deze chat te delen. Op de iPhone kun je via Contacten een contact delen als vCard of via iCloud.com geselecteerde contacten exporteren.</p></details><p id="microphoneStatus" class="muted" role="status">Microfoon: klik op 🎤 bij vertrek of bestemming om te dicteren.</p><p class="muted">Voor blijvende microfoontoegang: klik in Chrome links van het webadres op Sitegegevens → Site-instellingen → Microfoon → Toestaan. Kies bij een vraag Toestaan tijdens bezoek aan de site, niet Deze keer toestaan. De browser beheert dit per website; de planner kan het niet afdwingen. Hij luistert alleen na een klik op 🎤.</p><p class="muted">Het adresboek wordt lokaal in deze browser opgeslagen en synchroniseert niet automatisch tussen Mac en iPhone.</p></section>
 </div><div class="view" data-view="kosten" hidden><section class="card"><h2>Kostenberekening</h2><div class="grid">
 <div><label for="homePrice">Thuisstroom €/kWh</label><input id="homePrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.26836"></div>
@@ -725,8 +725,17 @@ function checkRangeWarning(){
  $(id).addEventListener('input',checkRangeWarning);$(id).addEventListener('change',checkRangeWarning);
 });
 function getBook(){try{const b=JSON.parse(localStorage.getItem('volvo-adresboek-v2')||'[]');return Array.isArray(b)?b.filter(x=>x&&typeof x.name==='string'&&typeof x.destination==='string'):[]}catch(e){return []}}
-function bookRender(){const sel=$('book');sel.replaceChildren(new Option('Kies een adres…',''));for(const {entry,index} of ContactsBook.filterBook(getBook(),$('bookFilter').value))sel.add(new Option(entry.name+' — '+entry.destination,String(index)))}
+function bookRender(){
+ const use=$('book'),remove=$('bookRemove'),entries=getBook();
+ use.replaceChildren(new Option('Kies een adres…',''));
+ remove.replaceChildren(new Option('Kies een adres…',''));
+ for(const {entry,index} of ContactsBook.filterBook(entries,$('bookFilter').value))use.add(new Option(entry.name+' — '+entry.destination,String(index)));
+ for(const {entry,index} of ContactsBook.filterBook(entries,''))remove.add(new Option(entry.name+' — '+entry.destination,String(index)));
+ remove.value='';
+ $('remove').disabled=true;
+}
 $('bookFilter').addEventListener('input',bookRender);
+$('bookTarget').addEventListener('change',()=>{$('book').value=''});
 function saveRouteAddress(field,message,nameInput){
  const address=$(field).value.trim();
  if(!address){message.textContent=field==='origin'?'Vul eerst een vertrekadres in.':'Vul eerst een bestemming in.';return}
@@ -739,14 +748,35 @@ function saveRouteAddress(field,message,nameInput){
  if(nameInput)nameInput.value='';
  $('bookFilter').value='';
  bookRender();
- $('book').value=String(existing===-1?entries.length-1:existing);
+ $('book').value='';
  $('bookTarget').value=field;
  message.textContent=existing===-1?'Opgeslagen in adresboek: '+name:'Staat al in je adresboek: '+entries[existing].name;
 }
 for(const field of ['origin','destination'])$('save-'+field).onclick=()=>saveRouteAddress(field,$('saved-'+field));
 $('save').onclick=()=>saveRouteAddress('destination',$('bookStatus'),$('bookName'));
-$('book').onchange=()=>{const i=$('book').value;if(i==='')return;const x=getBook()[Number(i)];if(x){const target=$('bookTarget').value==='origin'?'origin':'destination';$(target).value=x.destination;$(target).dispatchEvent(new Event('input',{bubbles:true}));calc();scheduleAutomaticRoute()}};
-$('remove').onclick=()=>{const i=$('book').value;if(i===''||!confirm('Bestemming verwijderen?'))return;const b=getBook();b.splice(Number(i),1);localStorage.setItem('volvo-adresboek-v2',JSON.stringify(b));bookRender()};
+$('book').onchange=()=>{
+ const index=$('book').value;
+ if(index==='')return;
+ const entry=getBook()[Number(index)];
+ if(!entry)return;
+ const target=$('bookTarget').value==='origin'?'origin':'destination';
+ $(target).value=entry.destination;
+ $(target).dispatchEvent(new Event('input',{bubbles:true}));
+ switchTab('route');
+ scheduleAutomaticRoute();
+ status((target==='origin'?'Vertrekadres':'Bestemming')+' ingevuld vanuit het adresboek.',true);
+};
+$('bookRemove').onchange=()=>{$('remove').disabled=$('bookRemove').value==='';$('bookRemoveStatus').textContent=''};
+$('remove').onclick=()=>{
+ const selected=$('bookRemove').value;
+ const entries=getBook(),entry=entries[Number(selected)];
+ if(selected===''||!entry||!confirm('Verwijder '+entry.name+' uit je adresboek?'))return;
+ entries.splice(Number(selected),1);
+ try{localStorage.setItem('volvo-adresboek-v2',JSON.stringify(entries))}
+ catch(e){$('bookRemoveStatus').textContent='Verwijderen is niet gelukt.';return}
+ bookRender();
+ $('bookRemoveStatus').textContent='Verwijderd uit adresboek: '+entry.name;
+};
 $('print').onclick=()=>window.print();
 $('reset').onclick=()=>{
  if(!confirm('Invoer herstellen? Je adresboek, Google Maps-sleutel en browsertoestemming blijven behouden.'))return;
