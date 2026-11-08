@@ -74,7 +74,7 @@ gmp-place-autocomplete::part(prediction-list){max-height:min(360px,45vh)!importa
 <div><label for="homePrice">Thuisstroom €/kWh</label><input id="homePrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.26836"></div>
 <div><label for="petrolPrice">Benzine €/liter</label><input id="petrolPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="2,120"><p id="petrolStatus" class="muted" role="status"></p><button id="petrolAuto" type="button" class="secondary">Gebruik dagprijs Apeldoorn</button></div>
 <div><label for="elecUse">Elektrisch kWh/100 km</label><input id="elecUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.1" value="14,8"><button id="resetElectricUse" type="button" class="secondary">Gebruik standaard 14,8</button></div>
-<div><label for="fuelUse">Benzineverbruik bij lege accu (l/100 km)</label><input id="fuelUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.01" value="8,54"><div class="actions"><button id="fuelEmptyBattery" type="button" class="secondary">Lege accu · 8,54 l/100 km</button></div><p class="muted">Na het opgebruiken van het elektrische bereik rekent de planner met dit verbruik. Je hybride praktijkgemiddelde is 2,60 l/100 km over alle kilometers.</p></div>
+<div><label for="fuelUse">Benzineverbruik bij lege accu (l/100 km)</label><input id="fuelUse" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="1" step="0.01" value="8,54"><div class="actions"><button id="fuelHybrid" type="button" class="secondary">Hybride · 2,60 l/100 km</button><button id="fuelEmptyBattery" type="button" class="secondary">Lege accu · 8,54 l/100 km</button></div><p class="muted">Na het opgebruiken van het elektrische bereik rekent de planner met dit verbruik. Gebruik Hybride om met je praktijkgemiddelde van 2,60 l/100 km te vergelijken. Voor de ritraming met apart berekende elektrische kilometers kies je Lege accu.</p></div>
 <div><label for="publicPrice">Openbaar tarief €/kWh</label><input id="publicPrice" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.001" value="0.555"></div>
 <div><label for="startFee">Start-/extra kosten (€)</label><input id="startFee" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" min="0" step="0.01" value="0"></div>
 </div>
@@ -821,6 +821,10 @@ $('elecUse').addEventListener('input',()=>{try{localStorage.setItem(electricManu
 $('resetElectricUse').onclick=()=>{
  $('elecUse').value=initialInput.elecUse;
  try{localStorage.removeItem(electricManualKey)}catch(e){}
+ calc();
+};
+$('fuelHybrid').onclick=()=>{
+ $('fuelUse').value='2,60';
  calc();
 };
 $('fuelEmptyBattery').onclick=()=>{
